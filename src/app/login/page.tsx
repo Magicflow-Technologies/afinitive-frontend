@@ -1,68 +1,84 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { api } from '@/services/api';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { api } from "@/services/api";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+
+  const toggleVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
-      setError('Por favor, completa todos los campos.');
+      setError("Por favor, completa todos los campos.");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // 1. Llamar al endpoint de login
       const res = await api.login(username.trim(), password);
-      
+
       // Guardar token y datos del usuario en localStorage
-      localStorage.setItem('tokenAuth', res.access_token);
-      localStorage.setItem('userSession', JSON.stringify(res.user));
+      localStorage.setItem("tokenAuth", res.access_token);
+      localStorage.setItem("userSession", JSON.stringify(res.user));
 
       // 2. Redireccionar según el rol
-      if (res.user.rol === 'cliente') {
+      if (res.user.rol === "cliente") {
         // Para clientes, buscamos su Ficha Madre activa
         try {
           const clientes = await api.obtenerClientes();
-          const cliente = clientes.find((c: any) => c.personaId === res.user.persona.id);
-          
+          const cliente = clientes.find(
+            (c: any) => c.personaId === res.user.persona.id,
+          );
+
           if (!cliente) {
-            throw new Error('No se encontró el registro de cliente asociado a tu cuenta.');
+            throw new Error(
+              "No se encontró el registro de cliente asociado a tu cuenta.",
+            );
           }
 
           const detalle = await api.obtenerClienteDetalle(cliente.id);
           if (!detalle.fichaMadre) {
-            throw new Error('No tienes un proceso de onboarding activo actualmente.');
+            throw new Error(
+              "No tienes un proceso de onboarding activo actualmente.",
+            );
           }
 
           // Guardamos datos del onboarding en localStorage
-          localStorage.setItem('fichaMadreId', detalle.fichaMadre.id);
-          localStorage.setItem('tokenAcceso', 'auth_session'); // Indicador de que entra autenticado
+          localStorage.setItem("fichaMadreId", detalle.fichaMadre.id);
+          localStorage.setItem("tokenAcceso", "auth_session"); // Indicador de que entra autenticado
 
           // Redirigir a su onboarding usando un token virtual 'session'
           router.push(`/onboarding/session`);
         } catch (err: any) {
           localStorage.clear();
-          throw new Error(err.message || 'Error al cargar tu expediente de onboarding.');
+          throw new Error(
+            err.message || "Error al cargar tu expediente de onboarding.",
+          );
         }
       } else {
         // Para roles administrativos (admin, operador, analista)
-        router.push('/admin');
+        router.push("/admin");
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Credenciales incorrectas o error en el servidor.');
+      setError(
+        err.message || "Credenciales incorrectas o error en el servidor.",
+      );
     } finally {
       setLoading(false);
     }
@@ -99,7 +115,10 @@ export default function LoginPage() {
         <div className="backdrop-blur-md bg-[#0a1c36]/40 border border-[#162e50] rounded-3xl p-8 shadow-2xl">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">
+              <label
+                htmlFor="username"
+                className="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2"
+              >
                 Usuario / Identificación
               </label>
               <input
@@ -115,25 +134,55 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-semibold uppercase tracking-wider text-neutral-400"
+                >
                   Contraseña
                 </label>
               </div>
-              <input
-                id="password"
-                type="password"
-                placeholder="Ingresa tu contraseña..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-[#050e1b] border border-[#162e50] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-neutral-600 text-sm font-medium"
-                disabled={loading}
-              />
+              <div className="relative flex items-center">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Ingresa tu contraseña..."
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#050e1b] border border-[#162e50] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-neutral-600 text-sm font-medium"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 cursor-pointer text-gray-400 hover:text-gray-600 focus:text-gray-600 focus:outline-none transition-colors"
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {error && (
               <div className="flex items-start gap-2.5 text-xs text-red-400 bg-red-950/20 border border-red-900/30 rounded-xl p-3">
-                <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                <svg
+                  className="w-4 h-4 mt-0.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  ></path>
                 </svg>
                 <span>{error}</span>
               </div>
@@ -146,17 +195,44 @@ export default function LoginPage() {
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   <span>Iniciando sesión...</span>
                 </>
               ) : (
                 <>
                   <span>Ingresar a mi cuenta</span>
-                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  <svg
+                    className="w-4 h-4 transition-transform group-hover:translate-x-1 duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    ></path>
                   </svg>
                 </>
               )}
@@ -166,8 +242,13 @@ export default function LoginPage() {
 
         {/* Footer Info */}
         <div className="text-center mt-8 text-xs text-neutral-500 space-y-1">
-          <div>Afinitive &copy; {new Date().getFullYear()}. Todos los derechos reservados.</div>
-          <div className="text-neutral-600">Acceso protegido mediante encriptación SSL/TLS de extremo a extremo.</div>
+          <div>
+            Afinitive &copy; {new Date().getFullYear()}. Todos los derechos
+            reservados.
+          </div>
+          <div className="text-neutral-600">
+            Acceso protegido mediante encriptación SSL/TLS de extremo a extremo.
+          </div>
         </div>
       </div>
     </div>
