@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { api, FichaMadre } from '@/services/api';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [fichas, setFichas] = useState<FichaMadre[]>([]);
@@ -96,9 +97,7 @@ export default function AdminDashboard() {
               className="inline-flex items-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all"
             >
               Ver todos los expedientes
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-              </svg>
+              <ArrowRight size={19} />
             </Link>
           </div>
         </div>
