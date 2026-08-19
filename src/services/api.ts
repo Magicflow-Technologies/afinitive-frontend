@@ -1,3 +1,5 @@
+import type { SaveInversionistaPayload, FichaMadreResponse } from '@/lib/ficha-madre.types';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export interface Persona {
@@ -21,52 +23,6 @@ export interface Empleado {
   persona: Persona;
   cargo: string;
   area?: string;
-}
-
-export interface FormularioPlantilla {
-  id: string;
-  nombre: string;
-  descripcion?: string;
-  categoria?: string;
-  version: number;
-  orden: number;
-  camposPlantilla?: CampoFormulario[];
-}
-
-export interface CampoFormulario {
-  id: string;
-  nombre: string;
-  etiqueta: string;
-  tipo: 'TEXTO' | 'NUMERO' | 'FECHA' | 'SELECT' | 'MULTISELECT' | 'CHECKBOX' | 'TEXTAREA' | 'EMAIL' | 'TELEFONO' | 'MONEDA';
-  obligatorio: boolean;
-  orden: number;
-  placeholder?: string;
-  helpText?: string;
-  valorPorDefecto?: string;
-  patronValidacion?: string;
-  minLength?: number;
-  maxLength?: number;
-  opciones?: string[] | any; // Puede ser un JSON Array de strings o similar
-}
-
-export interface RespuestaCampo {
-  id: string;
-  fichaFormularioId: string;
-  campoFormularioId: string;
-  valor: string;
-  campoFormulario?: CampoFormulario;
-}
-
-export interface FichaFormulario {
-  id: string;
-  fichaMadreId: string;
-  formularioPlantillaId: string;
-  estado: 'PENDIENTE' | 'EN_PROCESO' | 'COMPLETADO' | 'RECHAZADO';
-  intentos: number;
-  fechaInicio?: string;
-  fechaFinalizacion?: string;
-  formularioPlantilla: FormularioPlantilla;
-  respuestas?: RespuestaCampo[];
 }
 
 export interface Firma {
@@ -107,7 +63,6 @@ export interface FichaMadre {
   updatedAt: string;
   cliente: Cliente;
   empleado: Empleado;
-  fichasFormulario?: FichaFormulario[];
   documentos?: DocumentoGeneral[];
 }
 
@@ -183,53 +138,19 @@ export const api = {
   },
 
   /**
-   * Obtiene la Ficha Madre con todas sus relaciones cargadas (fichasFormulario, documentos, cliente, empleado).
+   * Obtiene la Ficha Madre reconstruida (perfil inversionista + metadata).
    */
   obtenerFichaMadre: (fichaMadreId: string) => {
-    return fetchAPI<FichaMadre>(`/fichas-madre/${fichaMadreId}`);
+    return fetchAPI<FichaMadreResponse>(`/fichas-madre/${fichaMadreId}`);
   },
 
   /**
-   * Obtiene la lista de formularios (FichaFormulario) asociados a una Ficha Madre.
+   * Guarda (upsert) el perfil completo del inversionista de una Ficha Madre.
    */
-  obtenerFichasFormulario: (fichaMadreId: string) => {
-    return fetchAPI<FichaFormulario[]>(`/fichas-formulario?fichaMadreId=${fichaMadreId}`);
-  },
-
-  /**
-   * Obtiene el detalle de un formulario específico con su plantilla y sus campos.
-   */
-  obtenerDetalleFormulario: (fichaFormularioId: string) => {
-    return fetchAPI<FichaFormulario>(`/fichas-formulario/${fichaFormularioId}`);
-  },
-
-  /**
-   * Actualiza el estado de un formulario (por ejemplo a EN_PROCESO o COMPLETADO).
-   */
-  actualizarEstadoFormulario: (fichaFormularioId: string, estado: FichaFormulario['estado']) => {
-    return fetchAPI<FichaFormulario>(`/fichas-formulario/${fichaFormularioId}`, {
+  guardarInversionista: (fichaMadreId: string, payload: SaveInversionistaPayload) => {
+    return fetchAPI<FichaMadreResponse>(`/fichas-madre/${fichaMadreId}/inversionista`, {
       method: 'PUT',
-      body: JSON.stringify({ estado }),
-    });
-  },
-
-  /**
-   * Guarda de forma masiva (batch) las respuestas de los campos de un formulario.
-   */
-  guardarRespuestasBatch: (respuestas: Array<{ fichaFormularioId: string; campoFormularioId: string; valor: string }>) => {
-    return fetchAPI<any[]>('/respuestas-campo/batch', {
-      method: 'POST',
-      body: JSON.stringify(respuestas),
-    });
-  },
-
-  /**
-   * Guarda una respuesta individual de un campo.
-   */
-  guardarRespuestaIndividual: (respuesta: { fichaFormularioId: string; campoFormularioId: string; valor: string }) => {
-    return fetchAPI<any>('/respuestas-campo', {
-      method: 'POST',
-      body: JSON.stringify(respuesta),
+      body: JSON.stringify(payload),
     });
   },
 
@@ -372,6 +293,13 @@ export const api = {
    */
   obtenerDocumentoPreview: (documentoId: string) => {
     return fetchAPI<{ html: string }>(`/documentos-generales/${documentoId}/preview`);
+  },
+
+  /**
+   * Lista los documentos generados de una Ficha Madre (con plantilla y firmas).
+   */
+  obtenerDocumentosFichaMadre: (fichaMadreId: string) => {
+    return fetchAPI<DocumentoGeneral[]>(`/documentos-generales?fichaMadreId=${fichaMadreId}`);
   },
 
   /**
