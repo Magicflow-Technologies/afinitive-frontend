@@ -72,6 +72,7 @@ export interface TokenAcceso {
   token: string;
   emailDestino: string;
   documentosFirmaCantidad?: number;
+  documentos?: { documentoGeneralId: string }[];
   estado: 'ACTIVO' | 'USADO' | 'EXPIRADO' | 'REVOCADO';
   expiraEn: string;
   usadoEn?: string;
@@ -245,6 +246,15 @@ export const api = {
    */
   reactivarTokenAcceso: (tokenId: string) => {
     return fetchAPI<TokenAcceso>(`/tokens-acceso/${tokenId}/reactivate`, {
+      method: 'PUT',
+    });
+  },
+
+  /**
+   * Marca un token como consumido/usado tras completar la Ficha Madre.
+   */
+  consumirToken: (token: string) => {
+    return fetchAPI<TokenAcceso>(`/tokens-acceso/consume/${token}`, {
       method: 'PUT',
     });
   },

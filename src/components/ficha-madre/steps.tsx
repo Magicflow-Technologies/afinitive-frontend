@@ -1,11 +1,15 @@
-import { useFormContext, useFieldArray, Controller, type FieldPath } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useFormContext, useWatch, useFieldArray, Controller, type FieldPath } from 'react-hook-form';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  FieldAccountNumber,
+  FieldCCI,
   FieldCheckbox,
   FieldDate,
+  FieldMoney,
   FieldRadio,
   FieldSelect,
   FieldSwitch,
@@ -13,6 +17,7 @@ import {
   FieldTextarea,
   SectionCard,
 } from './fields';
+import { montoALetras } from '@/lib/numero-a-letras';
 import {
   BANCOS,
   ESTADOS_CIVIL,
@@ -29,8 +34,8 @@ import {
 import type { FichaMadreFormValues } from './schema';
 
 export function PasoTitular() {
-  const { watch } = useFormContext<FichaMadreFormValues>();
-  const pep = watch('titular.pep');
+  const { control } = useFormContext<FichaMadreFormValues>();
+  const pep = useWatch({ control, name: 'titular.pep' });
 
   return (
     <div className="flex flex-col gap-4">
@@ -61,12 +66,12 @@ export function PasoTitular() {
           label="¿Es o ha sido Persona Expuesta Políticamente?"
           description="PEP: funcionarios públicos o personas con cargos políticos relevantes."
         />
-        {pep && (
+        {Boolean(pep) && (
           <FieldText
             name="titular.pep_institucion_cargo"
-            label="Institución / cargo"
+            label="Institución / cargo desempeñado"
             required
-            placeholder="Ej: Congresista de la República"
+            placeholder="Ej: Congresista de la República / Ministro / Alcalde"
             className="sm:col-span-2"
           />
         )}
@@ -76,8 +81,8 @@ export function PasoTitular() {
 }
 
 export function PasoConyuge() {
-  const { watch } = useFormContext<FichaMadreFormValues>();
-  const estadoCivil = (watch('titular.estado_civil') ?? '').toUpperCase();
+  const { control } = useFormContext<FichaMadreFormValues>();
+  const estadoCivil = (useWatch({ control, name: 'titular.estado_civil' }) ?? '').toUpperCase();
   const requiereConyuge = estadoCivil === 'CASADO' || estadoCivil === 'CONVIVIENTE';
 
   if (!requiereConyuge) {
@@ -107,8 +112,8 @@ export function PasoConyuge() {
 }
 
 export function PasoDomicilio() {
-  const { watch } = useFormContext<FichaMadreFormValues>();
-  const mismaDireccion = watch('usar_misma_direccion_correspondencia');
+  const { control } = useFormContext<FichaMadreFormValues>();
+  const mismaDireccion = useWatch({ control, name: 'usar_misma_direccion_correspondencia' });
 
   return (
     <div className="flex flex-col gap-4">
@@ -154,7 +159,13 @@ export function PasoLaboral() {
         <FieldText name="informacion_laboral.profesion" label="Profesión" required placeholder="Ej: Ingeniería de Software" />
         <FieldText name="informacion_laboral.ocupacion" label="Ocupación" required placeholder="Ej: Programador Full Stack" />
         <FieldText name="informacion_laboral.empresa_centro_trabajo" label="Empresa / centro de trabajo" required placeholder="Ej: Footloose" />
-        <FieldText name="informacion_laboral.ingreso_promedio_anual" label="Ingreso promedio anual (USD)" required inputMode="decimal" placeholder="Ej: 45000.00" />
+        <FieldMoney
+          name="informacion_laboral.ingreso_promedio_anual"
+          label="Ingreso promedio anual"
+          required
+          placeholder="Ej: 45,000.00"
+          currency="USD"
+        />
       </SectionCard>
 
       <SectionCard title="Vinculaciones y patrimonio" description="Vínculos con el Grupo Corfid y valor aproximado del patrimonio.">
@@ -171,12 +182,12 @@ export function PasoLaboral() {
           name="vinculaciones.ha_sido_trabajador_otra_fiduciaria"
           label="¿Ha sido trabajador de otra fiduciaria?"
         />
-        <FieldText
+        <FieldMoney
           name="vinculaciones.valor_aproximado_patrimonio"
-          label="Valor aproximado del patrimonio (USD)"
+          label="Valor aproximado del patrimonio"
           required
-          inputMode="decimal"
-          placeholder="Ej: 123100.00"
+          placeholder="Ej: 123,100.00"
+          currency="USD"
           className="sm:col-span-2"
         />
       </SectionCard>
@@ -208,10 +219,10 @@ export function PasoOrigenFondos() {
 }
 
 export function PasoApoderadoCumplimiento() {
-  const { control, watch } = useFormContext<FichaMadreFormValues>();
-  const tieneApoderado = watch('tiene_apoderado');
-  const investigado = watch('antecedentes_penales_judiciales.es_investigado_delitos');
-  const resideFuera = watch('residencia_fiscal.tiene_residencia_fiscal_extranjera');
+  const { control } = useFormContext<FichaMadreFormValues>();
+  const tieneApoderado = useWatch({ control, name: 'tiene_apoderado' });
+  const investigado = useWatch({ control, name: 'antecedentes_penales_judiciales.es_investigado_delitos' });
+  const resideFuera = useWatch({ control, name: 'residencia_fiscal.tiene_residencia_fiscal_extranjera' });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -340,19 +351,78 @@ function PaisFila({ index, onRemove }: { index: number; onRemove: () => void }) 
 }
 
 export function PasoInversion() {
+  const { control, setValue, getValues } = useFormContext<FichaMadreFormValues>();
+  const moneda = useWatch({ control, name: 'inversion.moneda' }) || 'USD';
+  const monto = useWatch({ control, name: 'inversion.monto_inicial' });
+  const cci = useWatch({ control, name: 'inversion.cuenta_cci' });
+
+  // Auto-sincronizar el monto en letras en tiempo real cuando se ingresa el monto
+  useEffect(() => {
+    if (monto && String(monto).trim() !== '') {
+      const letras = montoALetras(monto, moneda);
+      if (letras) {
+        setValue('inversion.monto_inicial_letras', letras, { shouldValidate: true });
+      }
+    }
+  }, [monto, moneda, setValue]);
+
+  // Auto-seleccionar el banco si se ingresa un CCI con prefijo conocido y el banco está vacío
+  useEffect(() => {
+    if (cci) {
+      const digits = String(cci).replace(/\D/g, '');
+      if (digits.length >= 3) {
+        const prefix = digits.slice(0, 3);
+        const bancoMap: Record<string, string> = {
+          '002': 'Banco de Crédito del Perú',
+          '011': 'BBVA',
+          '003': 'Interbank',
+          '009': 'Scotiabank',
+          '038': 'BanBif',
+          '056': 'Banco Pichincha',
+          '801': 'Caja Sullana',
+        };
+        const bancoMatch = bancoMap[prefix];
+        const currentBanco = getValues('inversion.banco_nombre');
+        if (bancoMatch && (!currentBanco || currentBanco === 'Otro')) {
+          setValue('inversion.banco_nombre', bancoMatch, { shouldValidate: true });
+        }
+      }
+    }
+  }, [cci, getValues, setValue]);
+
   return (
     <div className="flex flex-col gap-4">
       <SectionCard title="Datos de la inversión" description="Monto, moneda y origen de los recursos a invertir.">
         <FieldSelect name="inversion.moneda" label="Moneda" required options={MONEDAS} />
-        <FieldText name="inversion.monto_inicial" label="Monto inicial a invertir" required inputMode="decimal" placeholder="Ej: 120000.00" />
-        <FieldText name="inversion.monto_inicial_letras" label="Monto en letras" placeholder="Ej: CIENTO VEINTE MIL CON 00/100 DÓLARES AMERICANOS" className="sm:col-span-2" />
+        <FieldMoney
+          name="inversion.monto_inicial"
+          label="Monto inicial a invertir"
+          required
+          placeholder="Ej: 12,000.00"
+          currency={moneda}
+        />
+        <FieldText
+          name="inversion.monto_inicial_letras"
+          label="Monto en letras"
+          placeholder="Ej: DOCE MIL CON 00/100 DÓLARES AMERICANOS"
+          className="sm:col-span-2"
+        />
         <FieldSelect name="inversion.origen_recursos" label="Origen de los recursos" required options={ORIGENES_RECURSOS} />
       </SectionCard>
 
       <SectionCard title="Cuenta bancaria para abono de ganancias" description="Cuenta del cliente donde se abonarán los rendimientos.">
         <FieldSelect name="inversion.banco_nombre" label="Banco" options={BANCOS} placeholder="Seleccionar banco..." />
-        <FieldText name="inversion.numero_cuenta" label="Número de cuenta" inputMode="numeric" placeholder="Ej: 191-2848571-0-79" />
-        <FieldText name="inversion.cuenta_cci" label="CCI" inputMode="numeric" placeholder="Ej: 00219100284857107965" className="sm:col-span-2" />
+        <FieldAccountNumber
+          name="inversion.numero_cuenta"
+          label="Número de cuenta / tarjeta"
+          placeholder="Ej: 4557-8901-2345-6789 o 191-2848571-0-79"
+        />
+        <FieldCCI
+          name="inversion.cuenta_cci"
+          label="Código de Cuenta Interbancario (CCI)"
+          placeholder="Ej: 002-191-002848571079-65"
+          className="sm:col-span-2"
+        />
       </SectionCard>
     </div>
   );

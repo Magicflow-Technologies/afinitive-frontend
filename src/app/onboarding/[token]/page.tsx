@@ -57,7 +57,10 @@ export default function OnboardingFlowPage() {
   const [perfil, setPerfil] = useState<FichaMadreResponse | null>(null);
   const [fichaMadreId, setFichaMadreId] = useState<string>('');
   const [documentos, setDocumentos] = useState<DocumentoGeneral[]>([]);
-  const [etapa, setEtapa] = useState<'perfil' | 'firma'>('perfil');
+  const [tokenDocumentosIds, setTokenDocumentosIds] = useState<string[]>([]);
+  const [etapa, setEtapa] = useState<'perfil' | 'firma' | 'completado_ficha'>('perfil');
+  const [countdown, setCountdown] = useState<number>(30);
+  const [countdownPaused, setCountdownPaused] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [error, setError] = useState('');
@@ -107,24 +110,38 @@ export default function OnboardingFlowPage() {
     );
   }, [documentosOrdenados]);
 
-  // Paquete activo para la ronda actual: si hay pendientes toma los siguientes según la cantidad asignada
+  // Paquete activo para la ronda actual:
+  // Si el enlace tiene formatos específicos seleccionados por checkbox por el analista,
+  // se muestran y firman ÚNICAMENTE esos formatos exactos.
+  // De lo contrario, se toman los primeros según la cantidad asignada.
   const documentosPaquete = useMemo(() => {
+    if (tokenDocumentosIds.length > 0) {
+      return documentosOrdenados.filter((d) => tokenDocumentosIds.includes(d.id));
+    }
+
     const limiteValido = documentosFirmaCantidad > 0 ? documentosFirmaCantidad : 5;
     if (documentosPendientes.length > 0) {
       return documentosPendientes.slice(0, limiteValido);
     }
     return documentosOrdenados;
-  }, [documentosOrdenados, documentosPendientes, documentosFirmaCantidad]);
+  }, [documentosOrdenados, documentosPendientes, documentosFirmaCantidad, tokenDocumentosIds]);
 
-  // El proceso está 100% finalizado cuando no queda ningún documento pendiente en toda la ficha
-  const procesoFinalizado = etapa === 'firma' && documentos.length > 0 && documentosPendientes.length === 0;
+  // El proceso de la ronda está finalizado cuando todos los documentos del paquete activo están firmados
+  const procesoFinalizado =
+    etapa === 'firma' &&
+    documentosPaquete.length > 0 &&
+    documentosPaquete.every(
+      (d) => d.estado === 'FIRMADO' || (d.firmas.length > 0 && d.firmas.some((f) => f.estado === 'FIRMADO')),
+    );
 
   const cargarDocumentos = async (fichaMadreId: string) => {
     try {
       const docs = await api.obtenerDocumentosFichaMadre(fichaMadreId);
       setDocumentos(docs);
+      return docs;
     } catch (err) {
       console.warn('No fue posible cargar los documentos del expediente.', err);
+      return [];
     }
   };
 
@@ -144,12 +161,23 @@ export default function OnboardingFlowPage() {
             throw new Error('No hay una sesión activa de onboarding. Por favor inicia sesión.');
           }
           const cantidadGuardada = Number(localStorage.getItem('documentosFirmaCantidad') || '5');
+          const savedDocIdsRaw = localStorage.getItem('tokenDocumentosIds');
+          const savedDocIds: string[] = savedDocIdsRaw ? JSON.parse(savedDocIdsRaw) : [];
+          setTokenDocumentosIds(savedDocIds);
           setDocumentosFirmaCantidad(cantidadGuardada > 0 ? cantidadGuardada : 5);
           setFichaMadreId(currentFichaMadreId);
           const data = await api.obtenerFichaMadre(currentFichaMadreId);
           setPerfil(data);
-          setEtapa(isProfileComplete(data.fichaMadre?.inversionista) ? 'firma' : 'perfil');
-          await cargarDocumentos(currentFichaMadreId);
+          const docs = await cargarDocumentos(currentFichaMadreId);
+          const perfilCompleto = isProfileComplete(data.fichaMadre?.inversionista);
+          if (!perfilCompleto) {
+            setEtapa('perfil');
+          } else if (docs.length > 0) {
+            setEtapa('firma');
+          } else {
+            setEtapa('completado_ficha');
+            setCountdown(30);
+          }
           setLoading(false);
           return;
         }
@@ -158,12 +186,23 @@ export default function OnboardingFlowPage() {
         if (currentToken === token && currentFichaMadreId) {
           try {
             const cantidadGuardada = Number(localStorage.getItem('documentosFirmaCantidad') || '5');
+            const savedDocIdsRaw = localStorage.getItem('tokenDocumentosIds');
+            const savedDocIds: string[] = savedDocIdsRaw ? JSON.parse(savedDocIdsRaw) : [];
+            setTokenDocumentosIds(savedDocIds);
             setDocumentosFirmaCantidad(cantidadGuardada > 0 ? cantidadGuardada : 5);
             setFichaMadreId(currentFichaMadreId);
             const data = await api.obtenerFichaMadre(currentFichaMadreId);
             setPerfil(data);
-            setEtapa(isProfileComplete(data.fichaMadre?.inversionista) ? 'firma' : 'perfil');
-            await cargarDocumentos(currentFichaMadreId);
+            const docs = await cargarDocumentos(currentFichaMadreId);
+            const perfilCompleto = isProfileComplete(data.fichaMadre?.inversionista);
+            if (!perfilCompleto) {
+              setEtapa('perfil');
+            } else if (docs.length > 0) {
+              setEtapa('firma');
+            } else {
+              setEtapa('completado_ficha');
+              setCountdown(30);
+            }
             setLoading(false);
             return;
           } catch (e) {
@@ -173,6 +212,9 @@ export default function OnboardingFlowPage() {
 
         // Si no hay caché o falló, validamos el token de la URL (esto lo marcará como USADO en el backend)
         const tokenValido = await api.validarToken(token);
+        const specificDocIds = tokenValido.documentos?.map((d: any) => d.documentoGeneralId) || [];
+        setTokenDocumentosIds(specificDocIds);
+        localStorage.setItem('tokenDocumentosIds', JSON.stringify(specificDocIds));
         localStorage.setItem('fichaMadreId', tokenValido.fichaMadreId);
         localStorage.setItem('tokenAcceso', tokenValido.token);
         localStorage.setItem('documentosFirmaCantidad', String(tokenValido.documentosFirmaCantidad ?? 5));
@@ -181,8 +223,16 @@ export default function OnboardingFlowPage() {
 
         const data = await api.obtenerFichaMadre(tokenValido.fichaMadreId);
         setPerfil(data);
-        setEtapa(isProfileComplete(data.fichaMadre?.inversionista) ? 'firma' : 'perfil');
-        await cargarDocumentos(tokenValido.fichaMadreId);
+        const docs = await cargarDocumentos(tokenValido.fichaMadreId);
+        const perfilCompleto = isProfileComplete(data.fichaMadre?.inversionista);
+        if (!perfilCompleto) {
+          setEtapa('perfil');
+        } else if (docs.length > 0) {
+          setEtapa('firma');
+        } else {
+          setEtapa('completado_ficha');
+          setCountdown(30);
+        }
       } catch (err: any) {
         console.error(err);
         setError(err.message || 'Tu sesión ha expirado o el token de acceso no es válido.');
@@ -432,13 +482,47 @@ export default function OnboardingFlowPage() {
     }
   };
 
+  // Temporizador de cuenta regresiva para redirección automática al completar
+  useEffect(() => {
+    if (etapa !== 'completado_ficha' && !procesoFinalizado) return;
+    if (countdownPaused) return;
+
+    if (countdown <= 0) {
+      handleLogout();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [etapa, procesoFinalizado, countdown, countdownPaused]);
+
   const handlePerfilCompletado = async () => {
-    setNotice({ type: 'success', message: '¡Perfil completado! Ahora puedes revisar y firmar tus documentos.' });
+    // Si el acceso fue mediante un token real de onboarding, lo marcamos como USADO
+    if (token && token !== 'session') {
+      await api.consumirToken(token).catch((e) => console.warn('No se pudo marcar token como consumido:', e));
+    }
+
     const fichaId = fichaMadreId || localStorage.getItem('fichaMadreId');
     if (fichaId) {
-      await cargarDocumentos(fichaId);
+      try {
+        const docs = await api.obtenerDocumentosFichaMadre(fichaId);
+        setDocumentos(docs);
+        if (docs.length > 0) {
+          setEtapa('firma');
+          setNotice({ type: 'success', message: '¡Perfil guardado! Procede a revisar y firmar tus documentos.' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
     }
-    setEtapa('firma');
+    setEtapa('completado_ficha');
+    setCountdown(30);
+    setCountdownPaused(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -448,6 +532,7 @@ export default function OnboardingFlowPage() {
     localStorage.removeItem('tokenAcceso');
     localStorage.removeItem('tokenAuth');
     localStorage.removeItem('userSession');
+    localStorage.removeItem('tokenDocumentosIds');
     router.push('/login');
   };
 
@@ -550,6 +635,91 @@ export default function OnboardingFlowPage() {
                   </button>
                 </div>
               </div>
+            ) : etapa === 'completado_ficha' ? (
+              <div className="text-center space-y-8 py-10 max-w-2xl mx-auto">
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-tr from-emerald-600/30 to-blue-600/30 border border-emerald-500/40 text-emerald-400 shadow-2xl shadow-emerald-950/50 animate-pulse">
+                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+
+                <div className="space-y-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full">
+                    ✓ Ficha 100% Completada
+                  </span>
+                  <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+                    ¡Muchas gracias por tu tiempo!
+                  </h2>
+                  <p className="text-base text-neutral-300 leading-relaxed max-w-xl mx-auto">
+                    Hemos recibido satisfactoriamente toda tu información. Tu asesor y equipo de operaciones de <strong className="text-white">Afinitive</strong> revisarán tu expediente para la emisión de tus formatos.
+                  </p>
+                </div>
+
+                <div className="backdrop-blur-md bg-[#08172e]/90 border border-[#162e52] rounded-3xl p-6 text-left shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#162e52]/80 pb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Resumen de Recepción</span>
+                    <span className="text-xs font-mono font-bold text-blue-400">{codigo}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="text-neutral-500 block">Titular:</span>
+                      <span className="font-semibold text-white text-sm">{titular?.nombres_apellidos || 'Inversionista'}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 block">Documento de Identidad:</span>
+                      <span className="font-semibold text-white">{titular?.tipo_documento || 'DNI'}: {titular?.numero_documento || '---'}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 block">Correo Electrónico:</span>
+                      <span className="font-semibold text-white">{titular?.correo_electronico || '---'}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 block">Siguiente Paso:</span>
+                      <span className="font-semibold text-emerald-400">Revisión de expediente y envío de firma</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Temporizador de Redirección Automática */}
+                <div className="backdrop-blur-sm bg-[#050f1f]/80 border border-[#162e50] rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-neutral-400 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                      {countdownPaused
+                        ? 'Redirección en pausa'
+                        : `Redirigiendo a la pantalla de inicio en ${countdown} segundo${countdown === 1 ? '' : 's'}...`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCountdownPaused(!countdownPaused)}
+                      className="text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2 cursor-pointer"
+                    >
+                      {countdownPaused ? 'Reanudar contador' : 'Pausar'}
+                    </button>
+                  </div>
+                  <div className="w-full bg-[#0a1b33] h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-emerald-400 h-full transition-all duration-1000 ease-linear"
+                      style={{ width: `${(countdown / 30) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-sm shadow-xl shadow-blue-900/30 transition-all cursor-pointer"
+                  >
+                    Salir de forma segura ahora
+                  </button>
+                  <button
+                    onClick={() => setEtapa('perfil')}
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[#162e52] hover:bg-[#0a1b33] text-neutral-400 hover:text-white font-medium text-sm transition-all cursor-pointer"
+                  >
+                    Revisar mi Ficha Madre
+                  </button>
+                </div>
+              </div>
             ) : etapa === 'perfil' ? (
               <div className="space-y-6">
                 <div>
@@ -574,12 +744,12 @@ export default function OnboardingFlowPage() {
                       Este enlace incluye {documentosPaquete.length} documento{documentosPaquete.length === 1 ? '' : 's'} definidos por el analista para firmar en una sola acción.
                     </p>
                   </div>
-                  <button
+                  {/* <button
                     onClick={() => setEtapa('perfil')}
                     className="px-4 py-2 rounded-xl border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-900 transition-all text-xs font-semibold"
                   >
                     Editar perfil
-                  </button>
+                  </button> */}
                 </div>
 
                 <div className="backdrop-blur-md bg-neutral-900/30 border border-neutral-900 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">

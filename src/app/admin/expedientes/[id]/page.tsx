@@ -338,31 +338,37 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const todosDocumentosFirmados = tieneDocumentos && documentos.length > 0 && cantidadFirmados === documentos.length;
   const getTokenPackageLabel = (cantidad?: number) => `${cantidad ?? 5} documento${(cantidad ?? 5) === 1 ? '' : 's'}`;
   const getTokenStatusLabel = (token: TokenAcceso) => {
-    if (token.estado === 'REVOCADO') return 'Cerrado';
-    if (token.estado === 'EXPIRADO') return 'Vencido';
-    if (token.estado === 'USADO') return enlaceEsDeFirma ? 'Listo para firma' : 'Activo';
-    return enlaceEsDeFirma ? 'Listo para firma' : 'Activo';
+    if (token.estado === 'REVOCADO') return 'Enlace Cerrado';
+    if (token.estado === 'EXPIRADO') return 'Enlace Vencido';
+    if (token.estado === 'USADO') return 'Ficha Completada';
+    return enlaceEsDeFirma ? 'Listo para Firma' : 'Enlace Activo';
   };
 
   const getTokenStatusStyles = (token: TokenAcceso) => {
     if (token.estado === 'REVOCADO') {
-      return 'bg-red-500/10 border-red-500/30 text-red-300';
+      return 'bg-red-500/10 border-red-500/30 text-red-400';
     }
     if (token.estado === 'EXPIRADO') {
       return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300';
     }
-    if (enlaceEsDeFirma) {
-      return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
+    if (token.estado === 'USADO') {
+      return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
     }
-    return 'bg-blue-500/10 border-blue-500/30 text-blue-300';
+    if (enlaceEsDeFirma) {
+      return 'bg-blue-500/15 border-blue-500/40 text-blue-300';
+    }
+    return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
   };
 
   const getTokenStatusSubtitle = (token: TokenAcceso) => {
-    if (token.estado === 'REVOCADO') return 'Acceso cerrado por el analista.';
-    if (token.estado === 'EXPIRADO') return 'El enlace venció y debe renovarse.';
-    if (enlaceEsDeFirma) return 'Puede firmar los documentos pendientes.';
-    return 'Puede completar la ficha y continuar.';
+    if (token.estado === 'REVOCADO') return 'El acceso fue cerrado o reemplazado por un nuevo enlace.';
+    if (token.estado === 'EXPIRADO') return 'El enlace venció su plazo y debe generarse uno nuevo.';
+    if (token.estado === 'USADO') return 'El cliente ya completó el formulario con este enlace.';
+    if (enlaceEsDeFirma) return 'El cliente puede ingresar y firmar los formatos seleccionados.';
+    return 'Pendiente de que el cliente complete su Ficha Madre.';
   };
+
+  const tokenActivo = tokens.find((t) => t.estado === 'ACTIVO') || tokens[0];
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-h-full overflow-hidden -m-8 p-8">
@@ -795,85 +801,107 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 </button>
               </form>
 
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Tokens registrados</h4>
-                {tokens.length === 0 ? (
-                  <p className="text-xs text-neutral-500">
-                    Aún no se ha generado ningún enlace para este expediente. Si el cliente ya terminó la ficha, puedes reenviar uno nuevo para la firma.
-                  </p>
+              {/* Cuadro Único del Enlace Actual del Expediente */}
+              <div className="space-y-2 pt-2 border-t border-[#162e50]/40">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                    Enlace actual del cliente
+                  </h4>
+                  {tokens.length > 1 && (
+                    <span className="text-[10px] text-neutral-500 font-mono">
+                      (1 activo de {tokens.length} generados)
+                    </span>
+                  )}
+                </div>
+
+                {!tokenActivo ? (
+                  <div className="rounded-2xl border border-[#162e50]/40 bg-[#050e1b] p-4 text-center">
+                    <p className="text-xs text-neutral-500">
+                      Aún no se ha generado ningún enlace para este expediente. Ingresa el correo arriba y pulsa "Generar enlace" para enviar el acceso al cliente.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    {tokens.map((token) => (
-                      <div key={token.id} className="rounded-2xl border border-[#162e50]/50 bg-[#050e1b] p-3 space-y-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="space-y-1">
-                            <span
-                              className={`inline-flex px-2 py-1 rounded-full text-[10px] font-bold uppercase border ${getTokenStatusStyles(token)}`}
-                            >
-                              {getTokenStatusLabel(token)}
-                            </span>
-                            <p className="text-[10px] text-neutral-500 leading-tight max-w-[220px]">
-                              {getTokenStatusSubtitle(token)}
-                            </p>
-                          </div>
-                          <span className="text-[10px] text-neutral-500 font-mono self-start">
-                            Vence: {new Date(token.expiraEn).toLocaleString('es-PE')}
-                          </span>
-                        </div>
-
-                        <div className="text-[10px] text-neutral-500 font-mono">
-                          Paquete: {getTokenPackageLabel(token.documentosFirmaCantidad)}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 truncate text-[10px] text-neutral-400 bg-[#061325] border border-[#162e50] rounded-lg px-2 py-1">
-                            {`${origin}/onboarding/${token.token}`}
-                          </code>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleCopyTokenLink(token.token)}
-                            className="px-3 py-2 rounded-lg bg-[#0a1c36] border border-[#162e50] text-[10px] font-semibold text-white hover:bg-[#0d2140] transition-all"
-                          >
-                            Copiar enlace
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEmail(token.emailDestino, token.token)}
-                            className="px-3 py-2 rounded-lg bg-blue-600/10 border border-blue-500/30 text-[10px] font-semibold text-blue-300 hover:bg-blue-600/20 transition-all"
-                          >
-                            Enviar por correo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenWhatsApp(base.cliente.persona.telefono, token.token)}
-                            className="px-3 py-2 rounded-lg bg-emerald-600/10 border border-emerald-500/30 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-600/20 transition-all"
-                          >
-                            Enviar por WhatsApp
-                          </button>
-                        </div>
-
-                        {token.estado !== 'ACTIVO' ? (
-                          <button
-                            type="button"
-                            onClick={() => handleReactivateToken(token.id)}
-                            className="w-full px-3 py-2 rounded-lg bg-emerald-600/10 border border-emerald-500/30 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-600/20 transition-all"
-                          >
-                            Reactivar enlace
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleRevokeToken(token.id)}
-                            className="w-full px-3 py-2 rounded-lg bg-red-600/10 border border-red-500/30 text-[10px] font-semibold text-red-300 hover:bg-red-600/20 transition-all"
-                          >
-                            Cerrar enlace
-                          </button>
-                        )}
+                  <div className="rounded-2xl border border-[#162e50] bg-[#050e1b] p-4 space-y-3 shadow-lg">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${getTokenStatusStyles(tokenActivo)}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${tokenActivo.estado === 'ACTIVO' ? 'bg-emerald-400 animate-pulse' : 'bg-neutral-400'}`} />
+                          {getTokenStatusLabel(tokenActivo)}
+                        </span>
+                        <p className="text-[11px] text-neutral-400 leading-tight">
+                          {getTokenStatusSubtitle(tokenActivo)}
+                        </p>
                       </div>
-                    ))}
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] text-neutral-400 block font-mono">
+                          {tokenActivo.documentos && tokenActivo.documentos.length > 0
+                            ? `${tokenActivo.documentos.length} formatos a firmar`
+                            : tokenActivo.documentosFirmaCantidad
+                              ? `${tokenActivo.documentosFirmaCantidad} formatos`
+                              : 'Ficha Madre'}
+                        </span>
+                        <span className="text-[9px] text-neutral-500 font-mono block mt-0.5">
+                          Vence: {new Date(tokenActivo.expiraEn).toLocaleDateString('es-PE')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-[#061325] border border-[#162e50] rounded-xl p-1.5 pl-3">
+                      <code className="flex-1 truncate text-xs text-neutral-300 font-mono select-all">
+                        {`${origin}/onboarding/${tokenActivo.token}`}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyTokenLink(tokenActivo.token)}
+                        className="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-xs font-semibold border border-blue-500/30 transition-all cursor-pointer shrink-0"
+                        title="Copiar enlace"
+                      >
+                        Copiar
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEmail(tokenActivo.emailDestino, tokenActivo.token)}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600/10 border border-blue-500/30 text-xs font-semibold text-blue-300 hover:bg-blue-600/20 transition-all cursor-pointer"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Por Correo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenWhatsApp(base.cliente.persona.telefono, tokenActivo.token)}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/10 border border-emerald-500/30 text-xs font-semibold text-emerald-300 hover:bg-emerald-600/20 transition-all cursor-pointer"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                        </svg>
+                        Por WhatsApp
+                      </button>
+                    </div>
+
+                    {tokenActivo.estado !== 'ACTIVO' ? (
+                      <button
+                        type="button"
+                        onClick={() => handleReactivateToken(tokenActivo.id)}
+                        className="w-full px-3 py-2 rounded-xl bg-emerald-600/15 border border-emerald-500/30 text-xs font-semibold text-emerald-300 hover:bg-emerald-600/25 transition-all cursor-pointer"
+                      >
+                        Reactivar este enlace
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleRevokeToken(tokenActivo.id)}
+                        className="w-full px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-[11px] font-semibold text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
+                      >
+                        Cerrar / Invalidar enlace
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
