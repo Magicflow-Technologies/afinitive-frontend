@@ -731,6 +731,7 @@ export default function OnboardingFlowPage() {
                 <FichaMadreWizard
                   fichaMadreId={fichaMadreId || localStorage.getItem('fichaMadreId') || ''}
                   initial={inversionista}
+                  readOnly={perfil?.fichaMadre?.estado === 'APROBADA' || perfil?.fichaMadre?.estado === 'APROBADO'}
                   onSaved={(respuesta) => setPerfil(respuesta)}
                   onComplete={handlePerfilCompletado}
                 />

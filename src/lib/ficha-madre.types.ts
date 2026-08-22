@@ -133,9 +133,12 @@ export interface SaveInversionistaPayload {
 // Respuesta de GET /fichas-madre/:id (vía toFichaMadreObject)
 export interface FichaMadreResponse {
   fichaMadre: {
+    id?: string;
+    estado?: string;
     inversionista: SaveInversionistaPayload;
     metadata: {
       id_expediente?: string;
+      estado?: string;
       lugar_firma?: string;
       fecha_actual?: string;
       firmado?: boolean;

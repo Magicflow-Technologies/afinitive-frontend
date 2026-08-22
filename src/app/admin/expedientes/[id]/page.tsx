@@ -498,6 +498,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
               <FichaMadreWizard
                 fichaMadreId={id}
                 initial={perfil?.fichaMadre?.inversionista}
+                readOnly={base.estado === 'APROBADA'}
                 onSaved={(respuesta) => setPerfil(respuesta)}
               />
             </div>
