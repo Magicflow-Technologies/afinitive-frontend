@@ -54,10 +54,10 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const [notice, setNotice] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [autocompleteConfirmOpen, setAutocompleteConfirmOpen] = useState(false);
 
-  // Previsualización de documento
   const [previewDoc, setPreviewDoc] = useState<DocumentoGeneral | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [updatingEstado, setUpdatingEstado] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   const tieneDocumentos = documentos.length > 0;
@@ -162,14 +162,18 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   };
 
   const handleUpdateFichaEstado = async (nuevoEstado: FichaMadre['estado']) => {
+    setUpdatingEstado(true);
     try {
       await api.actualizarEstadoFichaMadre(id, nuevoEstado);
-      pushNotice('success', `Estado del expediente actualizado a ${nuevoEstado}.`);
+      const estadoEtiqueta = nuevoEstado === 'APROBADA' ? 'Aprobado' : nuevoEstado === 'RECHAZADA' ? 'Rechazado' : nuevoEstado;
+      pushNotice('success', `El expediente fue marcado como ${estadoEtiqueta}.`);
       const lista = await api.obtenerFichasMadre();
       setBase(lista.find((f) => f.id === id) ?? null);
     } catch (err: any) {
       console.error(err);
       pushNotice('error', err.message || 'No fue posible actualizar el estado del expediente.');
+    } finally {
+      setUpdatingEstado(false);
     }
   };
 
@@ -302,6 +306,8 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
       return a.index - b.index;
     })
     .map(({ doc }) => doc);
+  const cantidadFirmados = documentos.filter((doc) => doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO')).length;
+  const todosDocumentosFirmados = tieneDocumentos && documentos.length > 0 && cantidadFirmados === documentos.length;
   const getTokenPackageLabel = (cantidad?: number) => `${cantidad ?? 5} documento${(cantidad ?? 5) === 1 ? '' : 's'}`;
   const getTokenStatusLabel = (token: TokenAcceso) => {
     if (token.estado === 'REVOCADO') return 'Cerrado';
@@ -383,20 +389,62 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
-        {/* Estado y Selector de Expediente */}
-        <div className="flex items-center gap-3 self-start md:self-auto pl-11 md:pl-0">
-          <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Estado:</span>
-          <select
-            value={base.estado}
-            onChange={(e) => handleUpdateFichaEstado(e.target.value as any)}
-            className="px-3.5 py-2 bg-[#0a192f] border border-[#1b355a] rounded-xl text-xs font-bold text-white shadow-md focus:outline-none focus:border-blue-500 transition-all cursor-pointer [&_option]:bg-[#0a192f] [&_option]:text-white"
-          >
-            <option value="PENDIENTE">PENDIENTE</option>
-            <option value="EN_PROCESO">EN PROCESO</option>
-            <option value="EN_REVISION">EN REVISIÓN</option>
-            <option value="APROBADA">APROBADO</option>
-            <option value="RECHAZADA">RECHAZADO</option>
-          </select>
+        {/* Acciones y Estado del Expediente */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto pl-11 md:pl-0">
+          {base.estado !== 'APROBADA' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => handleUpdateFichaEstado('APROBADA')}
+                disabled={updatingEstado}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-950/30 transition-all cursor-pointer disabled:opacity-50"
+                title="Aprobar el expediente del cliente"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{updatingEstado ? 'Actualizando...' : 'Aprobar Expediente'}</span>
+              </button>
+
+              {base.estado === 'EN_REVISION' && (
+                <button
+                  type="button"
+                  onClick={() => handleUpdateFichaEstado('RECHAZADA')}
+                  disabled={updatingEstado}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300 font-bold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                  title="Rechazar u observar el expediente"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Rechazar</span>
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs rounded-xl">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Expediente Aprobado</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 bg-[#0a192f] border border-[#1b355a] rounded-xl px-3 py-1.5 shadow-md">
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Estado:</span>
+            <select
+              value={base.estado}
+              onChange={(e) => handleUpdateFichaEstado(e.target.value as any)}
+              disabled={updatingEstado}
+              className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer [&_option]:bg-[#0a192f] [&_option]:text-white"
+            >
+              <option value="PENDIENTE">PENDIENTE</option>
+              <option value="EN_PROCESO">EN PROCESO</option>
+              <option value="EN_REVISION">EN REVISIÓN</option>
+              <option value="APROBADA">APROBADO</option>
+              <option value="RECHAZADA">RECHAZADO</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -424,6 +472,48 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
           {/* COLUMNA DERECHA: EXPEDIENTE Y ACCIONES - ANCHOR LG 5 */}
           <div className="lg:col-span-5 w-full min-w-0 space-y-6">
 
+            {/* Banner de Estado / Aprobación */}
+            {base.estado === 'EN_REVISION' && (
+              <div className="flex items-center justify-between gap-4 p-4 bg-amber-500/10 border border-amber-500/25 rounded-3xl shadow-lg">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <h4 className="text-xs font-bold text-amber-300">Expediente en Revisión</h4>
+                  </div>
+                  <p className="text-[11px] text-neutral-300">
+                    {todosDocumentosFirmados
+                      ? 'Todas las firmas registradas (100%). Listo para aprobación final.'
+                      : `${cantidadFirmados} de ${documentos.length} formatos firmados.`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateFichaEstado('APROBADA')}
+                  disabled={updatingEstado}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0 disabled:opacity-50"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Aprobar</span>
+                </button>
+              </div>
+            )}
+
+            {base.estado === 'APROBADA' && (
+              <div className="flex items-center gap-3.5 p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-3xl shadow-lg">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-emerald-300">Expediente Aprobado</h4>
+                  <p className="text-[11px] text-neutral-300">El expediente cuenta con aprobación y conformidad fiduciaria.</p>
+                </div>
+              </div>
+            )}
+
             {/* Listado de Documentos Generados */}
             <div className="backdrop-blur-md bg-[#0a1c36]/10 border border-[#162e50]/30 rounded-3xl p-6 shadow-xl space-y-4">
               <div>
@@ -448,17 +538,33 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                   <button
                     type="button"
                     onClick={handleAutocomplete}
-                    disabled={completingDocs}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 text-xs font-semibold text-white hover:from-blue-500 hover:to-violet-500 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                    disabled={tieneDocumentos || completingDocs}
+                    className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-semibold transition-all ${
+                      tieneDocumentos
+                        ? 'bg-[#0a1c36]/40 border border-[#162e50] text-neutral-500 cursor-not-allowed opacity-75'
+                        : 'bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:from-blue-500 hover:to-violet-500 shadow-lg shadow-blue-950/20 cursor-pointer disabled:opacity-50 disabled:pointer-events-none'
+                    }`}
+                    title={tieneDocumentos ? 'Los 7 formatos ya fueron generados para este expediente' : 'Generar los 7 formatos fiduciarios'}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0114-14"></path>
-                    </svg>
-                    {completingDocs ? 'Regenerando...' : 'Generar de nuevo'}
+                    {tieneDocumentos ? (
+                      <>
+                        <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Formatos generados (7)</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0114-14" />
+                        </svg>
+                        <span>{completingDocs ? 'Generando...' : 'Generar formatos (7)'}</span>
+                      </>
+                    )}
                   </button>
                 ) : (
                   <div className="px-4 py-3 rounded-xl bg-[#050e1b] border border-[#162e50] text-xs text-neutral-500 flex items-center">
-                    Solo admin o analista pueden regenerar formatos.
+                    Solo admin o analista pueden generar formatos.
                   </div>
                 )}
               </div>
@@ -470,8 +576,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
               ) : (
                 <div className="space-y-3">
                   {documentosOrdenados.map((doc, index) => {
-                    const firma = doc.firmas?.[0];
-                    const esFirmado = firma?.estado === 'FIRMADO';
+                    const esFirmado = doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO');
                     return (
                       <div
                         key={doc.id}
@@ -690,8 +795,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
         {/* 3. MODAL DE PREVISUALIZACIÓN DE DOCUMENTO (PREMIUM A4 SIMULATOR) */}
         {previewDoc && (
           <div className="fixed inset-0 bg-neutral-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-4xl h-[90vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between">
-              {/* Header Modal */}
+            <div className="w-full max-w-5xl h-[92vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
               <div className="px-6 py-4 border-b border-[#162e50]/40 flex items-center justify-between bg-[#061325]">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500 font-mono">
@@ -701,7 +805,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 </div>
                 <button
                   onClick={() => setPreviewDoc(null)}
-                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all"
+                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -709,26 +813,23 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 </button>
               </div>
 
-              {/* Contenido A4 Scrollable */}
-              <div className="flex-1 overflow-y-auto bg-neutral-900 p-8 flex justify-center">
+              {/* Contenido A4 Scrollable con visor completo */}
+              <div className="flex-1 min-h-0 relative bg-[#e2e8f0] overflow-hidden flex flex-col items-center justify-center">
                 {loadingPreview ? (
-                  <div className="flex flex-col items-center justify-center text-neutral-400">
+                  <div className="flex flex-col items-center justify-center text-neutral-400 p-8 bg-[#050e1b] w-full h-full">
                     <svg className="animate-spin h-8 w-8 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p className="text-xs">Compilando y cargando el documento...</p>
+                    <p className="text-xs text-neutral-300">Compilando y cargando el documento...</p>
                   </div>
                 ) : (
-                  <div className="shadow-2xl border border-neutral-300 rounded-sm">
-                    {/* Se inyecta el HTML procesado directamente dentro de una caja con estilos aislados */}
-                    <iframe
-                      srcDoc={previewHtml}
-                      title="Doc Preview"
-                      className="w-[210mm] h-[297mm] bg-white border-0"
-                      sandbox="allow-same-origin"
-                    />
-                  </div>
+                  <iframe
+                    srcDoc={previewHtml}
+                    title="Doc Preview"
+                    className="w-full h-full border-0 bg-[#e2e8f0]"
+                    sandbox="allow-same-origin"
+                  />
                 )}
               </div>
 

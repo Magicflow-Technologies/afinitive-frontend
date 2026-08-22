@@ -210,18 +210,20 @@ export default function OnboardingFlowPage() {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(1, Math.floor(rect.width));
-    canvas.height = Math.max(1, Math.floor(rect.height));
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.lineWidth = 3;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#111827';
+    ctx.strokeStyle = '#0f172a';
     lienzoRef.current = { dibujando: false, ultimaX: 0, ultimaY: 0 };
     setFirmaDibujada(false);
   };
@@ -229,14 +231,12 @@ export default function OnboardingFlowPage() {
   useEffect(() => {
     if (!firmaModalAbierto) return;
 
-    const frame = window.requestAnimationFrame(prepararLienzo);
-    const onResize = () => prepararLienzo();
-
-    window.addEventListener('resize', onResize);
+    const frame = window.requestAnimationFrame(() => {
+      prepararLienzo();
+    });
 
     return () => {
       window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', onResize);
     };
   }, [firmaModalAbierto]);
 
@@ -339,8 +339,9 @@ export default function OnboardingFlowPage() {
         const b = data[index + 2];
         const a = data[index + 3];
 
-        // Detectar píxeles oscuros del trazo (fondo es #ffffff y trazo es #111827)
-        if (a > 30 && (r < 235 || g < 235 || b < 235)) {
+        // Detectar si el pixel tiene trazo (no transparente y no blanco de fondo)
+        const esTrazo = a > 15 && (r < 240 || g < 240 || b < 240);
+        if (esTrazo) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
           if (y < minY) minY = y;
@@ -354,12 +355,14 @@ export default function OnboardingFlowPage() {
       return canvas.toDataURL('image/png');
     }
 
-    // Margen de cortesía proporcional
-    const padding = 10;
+    // Margen de cortesía proporcional en píxeles reales (evita cortar terminaciones de línea)
+    const padding = 12;
     const cropX = Math.max(0, minX - padding);
     const cropY = Math.max(0, minY - padding);
-    const cropWidth = Math.min(width - cropX, maxX - minX + padding * 2);
-    const cropHeight = Math.min(height - cropY, maxY - minY + padding * 2);
+    const cropMaxX = Math.min(width, maxX + padding + 1);
+    const cropMaxY = Math.min(height, maxY + padding + 1);
+    const cropWidth = Math.max(1, cropMaxX - cropX);
+    const cropHeight = Math.max(1, cropMaxY - cropY);
 
     const croppedCanvas = document.createElement('canvas');
     croppedCanvas.width = cropWidth;
@@ -368,10 +371,7 @@ export default function OnboardingFlowPage() {
     const croppedCtx = croppedCanvas.getContext('2d');
     if (!croppedCtx) return canvas.toDataURL('image/png');
 
-    // Fondo blanco limpio y trazo
-    croppedCtx.fillStyle = '#ffffff';
-    croppedCtx.fillRect(0, 0, cropWidth, cropHeight);
-
+    // Copiar exclusivamente el área delimitada del trazo con fondo transparente
     croppedCtx.drawImage(
       canvas,
       cropX,
@@ -602,7 +602,7 @@ export default function OnboardingFlowPage() {
                   ) : (
                     <div className="space-y-3">
                       {documentosPaquete.map((doc, index) => {
-                        const estaFirmado = doc.firmas.length > 0 && doc.firmas.every((f) => f.estado === 'FIRMADO');
+                        const estaFirmado = doc.estado === 'FIRMADO' || (doc.firmas.length > 0 && doc.firmas.some((f) => f.estado === 'FIRMADO'));
 
                         return (
                           <div
@@ -707,7 +707,7 @@ export default function OnboardingFlowPage() {
       {/* MODAL DE PREVISUALIZACIÓN DE DOCUMENTO */}
       {previewDoc && (
         <div className="fixed inset-0 z-[85] bg-neutral-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl h-[90vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="w-full max-w-5xl h-[92vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
             <div className="px-6 py-4 border-b border-[#162e50]/40 flex items-center justify-between bg-[#061325]">
               <div>
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500 font-mono">
@@ -717,7 +717,7 @@ export default function OnboardingFlowPage() {
               </div>
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all"
+                className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -725,24 +725,22 @@ export default function OnboardingFlowPage() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-neutral-900 p-8 flex justify-center">
+            <div className="flex-1 min-h-0 relative bg-[#e2e8f0] overflow-hidden flex flex-col items-center justify-center">
               {loadingPreview ? (
-                <div className="flex flex-col items-center justify-center text-neutral-400">
+                <div className="flex flex-col items-center justify-center text-neutral-400 p-8 bg-[#050e1b] w-full h-full">
                   <svg className="animate-spin h-8 w-8 text-violet-500 mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <p className="text-xs">Compilando y cargando el documento...</p>
+                  <p className="text-xs text-neutral-300">Compilando y cargando el documento...</p>
                 </div>
               ) : (
-                <div className="shadow-2xl border border-neutral-300 rounded-sm">
-                  <iframe
-                    srcDoc={previewHtml}
-                    title="Doc Preview"
-                    className="w-[210mm] h-[297mm] bg-white border-0"
-                    sandbox="allow-same-origin"
-                  />
-                </div>
+                <iframe
+                  srcDoc={previewHtml}
+                  title="Doc Preview"
+                  className="w-full h-full border-0 bg-[#e2e8f0]"
+                  sandbox="allow-same-origin"
+                />
               )}
             </div>
 
