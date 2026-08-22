@@ -109,7 +109,7 @@ export default function OnboardingFlowPage() {
 
   // Paquete activo para la ronda actual: si hay pendientes toma los siguientes según la cantidad asignada
   const documentosPaquete = useMemo(() => {
-    const limiteValido = [2, 5, 7].includes(documentosFirmaCantidad) ? documentosFirmaCantidad : 5;
+    const limiteValido = documentosFirmaCantidad > 0 ? documentosFirmaCantidad : 5;
     if (documentosPendientes.length > 0) {
       return documentosPendientes.slice(0, limiteValido);
     }
@@ -144,7 +144,7 @@ export default function OnboardingFlowPage() {
             throw new Error('No hay una sesión activa de onboarding. Por favor inicia sesión.');
           }
           const cantidadGuardada = Number(localStorage.getItem('documentosFirmaCantidad') || '5');
-          setDocumentosFirmaCantidad([2, 5, 7].includes(cantidadGuardada) ? cantidadGuardada : 5);
+          setDocumentosFirmaCantidad(cantidadGuardada > 0 ? cantidadGuardada : 5);
           setFichaMadreId(currentFichaMadreId);
           const data = await api.obtenerFichaMadre(currentFichaMadreId);
           setPerfil(data);
@@ -158,7 +158,7 @@ export default function OnboardingFlowPage() {
         if (currentToken === token && currentFichaMadreId) {
           try {
             const cantidadGuardada = Number(localStorage.getItem('documentosFirmaCantidad') || '5');
-            setDocumentosFirmaCantidad([2, 5, 7].includes(cantidadGuardada) ? cantidadGuardada : 5);
+            setDocumentosFirmaCantidad(cantidadGuardada > 0 ? cantidadGuardada : 5);
             setFichaMadreId(currentFichaMadreId);
             const data = await api.obtenerFichaMadre(currentFichaMadreId);
             setPerfil(data);
@@ -176,7 +176,7 @@ export default function OnboardingFlowPage() {
         localStorage.setItem('fichaMadreId', tokenValido.fichaMadreId);
         localStorage.setItem('tokenAcceso', tokenValido.token);
         localStorage.setItem('documentosFirmaCantidad', String(tokenValido.documentosFirmaCantidad ?? 5));
-        setDocumentosFirmaCantidad([2, 5, 7].includes(tokenValido.documentosFirmaCantidad ?? 5) ? (tokenValido.documentosFirmaCantidad as 2 | 5 | 7) : 5);
+        setDocumentosFirmaCantidad(tokenValido.documentosFirmaCantidad && tokenValido.documentosFirmaCantidad > 0 ? tokenValido.documentosFirmaCantidad : 5);
         setFichaMadreId(tokenValido.fichaMadreId);
 
         const data = await api.obtenerFichaMadre(tokenValido.fichaMadreId);

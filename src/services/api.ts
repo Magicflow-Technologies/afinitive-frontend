@@ -95,6 +95,7 @@ export interface CreateTokenAccesoPayload {
   fichaMadreId: string;
   emailDestino: string;
   documentosFirmaCantidad?: number;
+  documentosIds?: string[];
 }
 
 export interface SignPackagePayload {

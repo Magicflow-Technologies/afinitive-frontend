@@ -39,6 +39,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const [tokens, setTokens] = useState<TokenAcceso[]>([]);
   const [tokenEmail, setTokenEmail] = useState('');
   const [firmaDocumentosCantidad, setFirmaDocumentosCantidad] = useState<2 | 5 | 7>(5);
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [generatingToken, setGeneratingToken] = useState(false);
   const [tokenMessage, setTokenMessage] = useState('');
   const [userRole, setUserRole] = useState<string>(() => {
@@ -82,12 +83,33 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
       setBase(lista.find((f) => f.id === id) ?? null);
       setPerfil(perfilData);
       setDocumentos(docs);
+      const pendingIds = docs
+        .filter((d) => d.estado !== 'FIRMADO' && (!d.firmas || d.firmas.some((f) => f.estado !== 'FIRMADO')))
+        .map((d) => d.id);
+      setSelectedDocIds((prev) => (prev.length === 0 ? pendingIds : prev));
     } catch (err: any) {
       console.error(err);
       setError('Error al cargar la información del expediente.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToggleDocSelect = (docId: string) => {
+    setSelectedDocIds((prev) =>
+      prev.includes(docId) ? prev.filter((id) => id !== docId) : [...prev, docId],
+    );
+  };
+
+  const handleSelectAllPending = () => {
+    const pendingIds = documentos
+      .filter((d) => d.estado !== 'FIRMADO' && (!d.firmas || d.firmas.some((f) => f.estado !== 'FIRMADO')))
+      .map((d) => d.id);
+    setSelectedDocIds(pendingIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedDocIds([]);
   };
 
   const loadTokens = async () => {
@@ -186,16 +208,22 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
       return;
     }
 
+    if (enlaceEsDeFirma && selectedDocIds.length === 0) {
+      setTokenMessage('Debes seleccionar al menos un documento para enviar en el enlace de firma.');
+      return;
+    }
+
     setGeneratingToken(true);
     try {
       await api.crearTokenAcceso({
         fichaMadreId: id,
         emailDestino: tokenEmail.trim(),
-        documentosFirmaCantidad: firmaDocumentosCantidad,
+        documentosFirmaCantidad: enlaceEsDeFirma ? selectedDocIds.length : firmaDocumentosCantidad,
+        documentosIds: enlaceEsDeFirma ? selectedDocIds : undefined,
       });
       await loadTokens();
       setTokenEmail('');
-      setTokenMessage(enlaceEsDeFirma ? 'Enlace de firma generado correctamente.' : 'Enlace de acceso generado correctamente.');
+      setTokenMessage(enlaceEsDeFirma ? 'Enlace de firma generado correctamente con los formatos seleccionados.' : 'Enlace de acceso generado correctamente.');
     } catch (err: any) {
       console.error(err);
       setTokenMessage(err.message || 'No fue posible generar el enlace.');
@@ -639,21 +667,99 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 <p className="text-xs text-neutral-400 mt-1 leading-relaxed">{enlaceDescripcion}</p>
               </div>
 
-              <form onSubmit={handleGenerateToken} className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-                    Paquete de firma
-                  </label>
-                  <select
-                    value={firmaDocumentosCantidad}
-                    onChange={(e) => setFirmaDocumentosCantidad(Number(e.target.value) as 2 | 5 | 7)}
-                    className="w-full px-4 py-3 bg-[#050e1b] border border-[#162e50] rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer"
-                  >
-                    <option value={2}>2 documentos</option>
-                    <option value={5}>5 documentos</option>
-                    <option value={7}>7 documentos</option>
-                  </select>
-                </div>
+              <form onSubmit={handleGenerateToken} className="space-y-4">
+                {enlaceEsDeFirma ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                        Formatos a firmar ({selectedDocIds.length} de {documentos.length} seleccionados)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSelectAllPending}
+                          className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2 cursor-pointer"
+                        >
+                          Todos los pendientes
+                        </button>
+                        <span className="text-neutral-600 text-xs">•</span>
+                        <button
+                          type="button"
+                          onClick={handleDeselectAll}
+                          className="text-[11px] text-neutral-400 hover:text-neutral-300 font-semibold underline underline-offset-2 cursor-pointer"
+                        >
+                          Ninguno
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 bg-[#050e1b] border border-[#162e50] rounded-2xl p-2.5">
+                      {documentosOrdenados.map((doc, index) => {
+                        const esDocFirmado = doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO');
+                        const isSelected = selectedDocIds.includes(doc.id);
+
+                        return (
+                          <div
+                            key={doc.id}
+                            onClick={() => {
+                              if (!esDocFirmado) handleToggleDocSelect(doc.id);
+                            }}
+                            className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
+                              esDocFirmado
+                                ? 'bg-[#08172c]/40 border-emerald-500/20 text-neutral-500 opacity-80 cursor-not-allowed'
+                                : isSelected
+                                  ? 'bg-blue-600/10 border-blue-500/50 text-white cursor-pointer hover:bg-blue-600/15'
+                                  : 'bg-[#0a1c36]/20 border-[#162e50]/40 text-neutral-400 cursor-pointer hover:border-[#162e50]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={esDocFirmado ? true : isSelected}
+                                disabled={esDocFirmado}
+                                onChange={() => {
+                                  if (!esDocFirmado) handleToggleDocSelect(doc.id);
+                                }}
+                                className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-blue-600 accent-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                              />
+                              <div className="min-w-0">
+                                <span className="block text-[9px] font-mono uppercase text-neutral-500 font-bold">
+                                  FORMATO {String(index + 1).padStart(2, '0')}
+                                </span>
+                                <span className="block text-xs font-semibold truncate max-w-[240px]" title={doc.nombreArchivo}>
+                                  {doc.nombreArchivo}
+                                </span>
+                              </div>
+                            </div>
+
+                            {esDocFirmado ? (
+                              <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase">
+                                ✓ Firmado
+                              </span>
+                            ) : isSelected ? (
+                              <span className="shrink-0 px-2 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-semibold">
+                                Seleccionado
+                              </span>
+                            ) : (
+                              <span className="shrink-0 px-2 py-0.5 rounded-md bg-neutral-800 text-neutral-500 text-[10px]">
+                                Excluido
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                      Acceso al formulario inicial
+                    </label>
+                    <p className="text-xs text-neutral-400 bg-[#050e1b] border border-[#162e50] rounded-xl p-3">
+                      Este enlace permitirá al cliente completar los 7 pasos de su Ficha Madre de Inversionista.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
@@ -676,15 +782,15 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
 
                 <button
                   type="submit"
-                  disabled={generatingToken}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-60 disabled:pointer-events-none"
+                  disabled={generatingToken || (enlaceEsDeFirma && selectedDocIds.length === 0)}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
                 >
                   {generatingToken
                     ? enlaceEsDeFirma
                       ? 'Generando enlace de firma...'
                       : 'Generando enlace...'
                     : enlaceEsDeFirma
-                      ? 'Generar enlace de firma'
+                      ? `Generar enlace de firma (${selectedDocIds.length} formato${selectedDocIds.length === 1 ? '' : 's'})`
                       : 'Generar enlace'}
                 </button>
               </form>
