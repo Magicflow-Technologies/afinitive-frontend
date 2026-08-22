@@ -601,7 +601,7 @@ export function formValuesToPayload(values: FichaMadreFormValues): SaveInversion
     },
     domicilio: values.domicilio,
     direccion_correspondencia: values.usar_misma_direccion_correspondencia
-      ? { ...values.direccion_correspondencia }
+      ? { ...values.domicilio }
       : values.direccion_correspondencia,
     informacion_laboral: values.informacion_laboral,
     apoderado: values.tiene_apoderado ? values.apoderado : values.apoderado,
