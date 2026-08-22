@@ -39,6 +39,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const [tokens, setTokens] = useState<TokenAcceso[]>([]);
   const [tokenEmail, setTokenEmail] = useState('');
   const [firmaDocumentosCantidad, setFirmaDocumentosCantidad] = useState<2 | 5 | 7>(5);
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [generatingToken, setGeneratingToken] = useState(false);
   const [tokenMessage, setTokenMessage] = useState('');
   const [userRole, setUserRole] = useState<string>(() => {
@@ -54,10 +55,10 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const [notice, setNotice] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [autocompleteConfirmOpen, setAutocompleteConfirmOpen] = useState(false);
 
-  // Previsualización de documento
   const [previewDoc, setPreviewDoc] = useState<DocumentoGeneral | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [updatingEstado, setUpdatingEstado] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   const tieneDocumentos = documentos.length > 0;
@@ -82,12 +83,33 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
       setBase(lista.find((f) => f.id === id) ?? null);
       setPerfil(perfilData);
       setDocumentos(docs);
+      const pendingIds = docs
+        .filter((d) => d.estado !== 'FIRMADO' && (!d.firmas || d.firmas.some((f) => f.estado !== 'FIRMADO')))
+        .map((d) => d.id);
+      setSelectedDocIds((prev) => (prev.length === 0 ? pendingIds : prev));
     } catch (err: any) {
       console.error(err);
       setError('Error al cargar la información del expediente.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToggleDocSelect = (docId: string) => {
+    setSelectedDocIds((prev) =>
+      prev.includes(docId) ? prev.filter((id) => id !== docId) : [...prev, docId],
+    );
+  };
+
+  const handleSelectAllPending = () => {
+    const pendingIds = documentos
+      .filter((d) => d.estado !== 'FIRMADO' && (!d.firmas || d.firmas.some((f) => f.estado !== 'FIRMADO')))
+      .map((d) => d.id);
+    setSelectedDocIds(pendingIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedDocIds([]);
   };
 
   const loadTokens = async () => {
@@ -162,14 +184,18 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   };
 
   const handleUpdateFichaEstado = async (nuevoEstado: FichaMadre['estado']) => {
+    setUpdatingEstado(true);
     try {
       await api.actualizarEstadoFichaMadre(id, nuevoEstado);
-      pushNotice('success', `Estado del expediente actualizado a ${nuevoEstado}.`);
+      const estadoEtiqueta = nuevoEstado === 'APROBADA' ? 'Aprobado' : nuevoEstado === 'RECHAZADA' ? 'Rechazado' : nuevoEstado;
+      pushNotice('success', `El expediente fue marcado como ${estadoEtiqueta}.`);
       const lista = await api.obtenerFichasMadre();
       setBase(lista.find((f) => f.id === id) ?? null);
     } catch (err: any) {
       console.error(err);
       pushNotice('error', err.message || 'No fue posible actualizar el estado del expediente.');
+    } finally {
+      setUpdatingEstado(false);
     }
   };
 
@@ -182,16 +208,22 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
       return;
     }
 
+    if (enlaceEsDeFirma && selectedDocIds.length === 0) {
+      setTokenMessage('Debes seleccionar al menos un documento para enviar en el enlace de firma.');
+      return;
+    }
+
     setGeneratingToken(true);
     try {
       await api.crearTokenAcceso({
         fichaMadreId: id,
         emailDestino: tokenEmail.trim(),
-        documentosFirmaCantidad: firmaDocumentosCantidad,
+        documentosFirmaCantidad: enlaceEsDeFirma ? selectedDocIds.length : firmaDocumentosCantidad,
+        documentosIds: enlaceEsDeFirma ? selectedDocIds : undefined,
       });
       await loadTokens();
       setTokenEmail('');
-      setTokenMessage(enlaceEsDeFirma ? 'Enlace de firma generado correctamente.' : 'Enlace de acceso generado correctamente.');
+      setTokenMessage(enlaceEsDeFirma ? 'Enlace de firma generado correctamente con los formatos seleccionados.' : 'Enlace de acceso generado correctamente.');
     } catch (err: any) {
       console.error(err);
       setTokenMessage(err.message || 'No fue posible generar el enlace.');
@@ -302,33 +334,41 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
       return a.index - b.index;
     })
     .map(({ doc }) => doc);
+  const cantidadFirmados = documentos.filter((doc) => doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO')).length;
+  const todosDocumentosFirmados = tieneDocumentos && documentos.length > 0 && cantidadFirmados === documentos.length;
   const getTokenPackageLabel = (cantidad?: number) => `${cantidad ?? 5} documento${(cantidad ?? 5) === 1 ? '' : 's'}`;
   const getTokenStatusLabel = (token: TokenAcceso) => {
-    if (token.estado === 'REVOCADO') return 'Cerrado';
-    if (token.estado === 'EXPIRADO') return 'Vencido';
-    if (token.estado === 'USADO') return enlaceEsDeFirma ? 'Listo para firma' : 'Activo';
-    return enlaceEsDeFirma ? 'Listo para firma' : 'Activo';
+    if (token.estado === 'REVOCADO') return 'Enlace Cerrado';
+    if (token.estado === 'EXPIRADO') return 'Enlace Vencido';
+    if (token.estado === 'USADO') return 'Ficha Completada';
+    return enlaceEsDeFirma ? 'Listo para Firma' : 'Enlace Activo';
   };
 
   const getTokenStatusStyles = (token: TokenAcceso) => {
     if (token.estado === 'REVOCADO') {
-      return 'bg-red-500/10 border-red-500/30 text-red-300';
+      return 'bg-red-500/10 border-red-500/30 text-red-400';
     }
     if (token.estado === 'EXPIRADO') {
       return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300';
     }
-    if (enlaceEsDeFirma) {
-      return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
+    if (token.estado === 'USADO') {
+      return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
     }
-    return 'bg-blue-500/10 border-blue-500/30 text-blue-300';
+    if (enlaceEsDeFirma) {
+      return 'bg-blue-500/15 border-blue-500/40 text-blue-300';
+    }
+    return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
   };
 
   const getTokenStatusSubtitle = (token: TokenAcceso) => {
-    if (token.estado === 'REVOCADO') return 'Acceso cerrado por el analista.';
-    if (token.estado === 'EXPIRADO') return 'El enlace venció y debe renovarse.';
-    if (enlaceEsDeFirma) return 'Puede firmar los documentos pendientes.';
-    return 'Puede completar la ficha y continuar.';
+    if (token.estado === 'REVOCADO') return 'El acceso fue cerrado o reemplazado por un nuevo enlace.';
+    if (token.estado === 'EXPIRADO') return 'El enlace venció su plazo y debe generarse uno nuevo.';
+    if (token.estado === 'USADO') return 'El cliente ya completó el formulario con este enlace.';
+    if (enlaceEsDeFirma) return 'El cliente puede ingresar y firmar los formatos seleccionados.';
+    return 'Pendiente de que el cliente complete su Ficha Madre.';
   };
+
+  const tokenActivo = tokens.find((t) => t.estado === 'ACTIVO') || tokens[0];
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-h-full overflow-hidden -m-8 p-8">
@@ -383,20 +423,62 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
-        {/* Estado y Selector de Expediente */}
-        <div className="flex items-center gap-3 self-start md:self-auto pl-11 md:pl-0">
-          <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Estado:</span>
-          <select
-            value={base.estado}
-            onChange={(e) => handleUpdateFichaEstado(e.target.value as any)}
-            className="px-3.5 py-2 bg-[#0a192f] border border-[#1b355a] rounded-xl text-xs font-bold text-white shadow-md focus:outline-none focus:border-blue-500 transition-all cursor-pointer [&_option]:bg-[#0a192f] [&_option]:text-white"
-          >
-            <option value="PENDIENTE">PENDIENTE</option>
-            <option value="EN_PROCESO">EN PROCESO</option>
-            <option value="EN_REVISION">EN REVISIÓN</option>
-            <option value="APROBADA">APROBADO</option>
-            <option value="RECHAZADA">RECHAZADO</option>
-          </select>
+        {/* Acciones y Estado del Expediente */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto pl-11 md:pl-0">
+          {base.estado !== 'APROBADA' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => handleUpdateFichaEstado('APROBADA')}
+                disabled={updatingEstado}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-950/30 transition-all cursor-pointer disabled:opacity-50"
+                title="Aprobar el expediente del cliente"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{updatingEstado ? 'Actualizando...' : 'Aprobar Expediente'}</span>
+              </button>
+
+              {base.estado === 'EN_REVISION' && (
+                <button
+                  type="button"
+                  onClick={() => handleUpdateFichaEstado('RECHAZADA')}
+                  disabled={updatingEstado}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300 font-bold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                  title="Rechazar u observar el expediente"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Rechazar</span>
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs rounded-xl">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Expediente Aprobado</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 bg-[#0a192f] border border-[#1b355a] rounded-xl px-3 py-1.5 shadow-md">
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Estado:</span>
+            <select
+              value={base.estado}
+              onChange={(e) => handleUpdateFichaEstado(e.target.value as any)}
+              disabled={updatingEstado}
+              className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer [&_option]:bg-[#0a192f] [&_option]:text-white"
+            >
+              <option value="PENDIENTE">PENDIENTE</option>
+              <option value="EN_PROCESO">EN PROCESO</option>
+              <option value="EN_REVISION">EN REVISIÓN</option>
+              <option value="APROBADA">APROBADO</option>
+              <option value="RECHAZADA">RECHAZADO</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -416,6 +498,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
               <FichaMadreWizard
                 fichaMadreId={id}
                 initial={perfil?.fichaMadre?.inversionista}
+                readOnly={base.estado === 'APROBADA'}
                 onSaved={(respuesta) => setPerfil(respuesta)}
               />
             </div>
@@ -423,6 +506,48 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
 
           {/* COLUMNA DERECHA: EXPEDIENTE Y ACCIONES - ANCHOR LG 5 */}
           <div className="lg:col-span-5 w-full min-w-0 space-y-6">
+
+            {/* Banner de Estado / Aprobación */}
+            {base.estado === 'EN_REVISION' && (
+              <div className="flex items-center justify-between gap-4 p-4 bg-amber-500/10 border border-amber-500/25 rounded-3xl shadow-lg">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <h4 className="text-xs font-bold text-amber-300">Expediente en Revisión</h4>
+                  </div>
+                  <p className="text-[11px] text-neutral-300">
+                    {todosDocumentosFirmados
+                      ? 'Todas las firmas registradas (100%). Listo para aprobación final.'
+                      : `${cantidadFirmados} de ${documentos.length} formatos firmados.`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateFichaEstado('APROBADA')}
+                  disabled={updatingEstado}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0 disabled:opacity-50"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Aprobar</span>
+                </button>
+              </div>
+            )}
+
+            {base.estado === 'APROBADA' && (
+              <div className="flex items-center gap-3.5 p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-3xl shadow-lg">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-emerald-300">Expediente Aprobado</h4>
+                  <p className="text-[11px] text-neutral-300">El expediente cuenta con aprobación y conformidad fiduciaria.</p>
+                </div>
+              </div>
+            )}
 
             {/* Listado de Documentos Generados */}
             <div className="backdrop-blur-md bg-[#0a1c36]/10 border border-[#162e50]/30 rounded-3xl p-6 shadow-xl space-y-4">
@@ -448,17 +573,33 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                   <button
                     type="button"
                     onClick={handleAutocomplete}
-                    disabled={completingDocs}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 text-xs font-semibold text-white hover:from-blue-500 hover:to-violet-500 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                    disabled={tieneDocumentos || completingDocs}
+                    className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-semibold transition-all ${
+                      tieneDocumentos
+                        ? 'bg-[#0a1c36]/40 border border-[#162e50] text-neutral-500 cursor-not-allowed opacity-75'
+                        : 'bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:from-blue-500 hover:to-violet-500 shadow-lg shadow-blue-950/20 cursor-pointer disabled:opacity-50 disabled:pointer-events-none'
+                    }`}
+                    title={tieneDocumentos ? 'Los 7 formatos ya fueron generados para este expediente' : 'Generar los 7 formatos fiduciarios'}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0114-14"></path>
-                    </svg>
-                    {completingDocs ? 'Regenerando...' : 'Generar de nuevo'}
+                    {tieneDocumentos ? (
+                      <>
+                        <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Formatos generados (7)</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0114-14" />
+                        </svg>
+                        <span>{completingDocs ? 'Generando...' : 'Generar formatos (7)'}</span>
+                      </>
+                    )}
                   </button>
                 ) : (
                   <div className="px-4 py-3 rounded-xl bg-[#050e1b] border border-[#162e50] text-xs text-neutral-500 flex items-center">
-                    Solo admin o analista pueden regenerar formatos.
+                    Solo admin o analista pueden generar formatos.
                   </div>
                 )}
               </div>
@@ -470,8 +611,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
               ) : (
                 <div className="space-y-3">
                   {documentosOrdenados.map((doc, index) => {
-                    const firma = doc.firmas?.[0];
-                    const esFirmado = firma?.estado === 'FIRMADO';
+                    const esFirmado = doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO');
                     return (
                       <div
                         key={doc.id}
@@ -534,21 +674,99 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 <p className="text-xs text-neutral-400 mt-1 leading-relaxed">{enlaceDescripcion}</p>
               </div>
 
-              <form onSubmit={handleGenerateToken} className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-                    Paquete de firma
-                  </label>
-                  <select
-                    value={firmaDocumentosCantidad}
-                    onChange={(e) => setFirmaDocumentosCantidad(Number(e.target.value) as 2 | 5 | 7)}
-                    className="w-full px-4 py-3 bg-[#050e1b] border border-[#162e50] rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer"
-                  >
-                    <option value={2}>2 documentos</option>
-                    <option value={5}>5 documentos</option>
-                    <option value={7}>7 documentos</option>
-                  </select>
-                </div>
+              <form onSubmit={handleGenerateToken} className="space-y-4">
+                {enlaceEsDeFirma ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                        Formatos a firmar ({selectedDocIds.length} de {documentos.length} seleccionados)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSelectAllPending}
+                          className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2 cursor-pointer"
+                        >
+                          Todos los pendientes
+                        </button>
+                        <span className="text-neutral-600 text-xs">•</span>
+                        <button
+                          type="button"
+                          onClick={handleDeselectAll}
+                          className="text-[11px] text-neutral-400 hover:text-neutral-300 font-semibold underline underline-offset-2 cursor-pointer"
+                        >
+                          Ninguno
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 bg-[#050e1b] border border-[#162e50] rounded-2xl p-2.5">
+                      {documentosOrdenados.map((doc, index) => {
+                        const esDocFirmado = doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO');
+                        const isSelected = selectedDocIds.includes(doc.id);
+
+                        return (
+                          <div
+                            key={doc.id}
+                            onClick={() => {
+                              if (!esDocFirmado) handleToggleDocSelect(doc.id);
+                            }}
+                            className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
+                              esDocFirmado
+                                ? 'bg-[#08172c]/40 border-emerald-500/20 text-neutral-500 opacity-80 cursor-not-allowed'
+                                : isSelected
+                                  ? 'bg-blue-600/10 border-blue-500/50 text-white cursor-pointer hover:bg-blue-600/15'
+                                  : 'bg-[#0a1c36]/20 border-[#162e50]/40 text-neutral-400 cursor-pointer hover:border-[#162e50]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={esDocFirmado ? true : isSelected}
+                                disabled={esDocFirmado}
+                                onChange={() => {
+                                  if (!esDocFirmado) handleToggleDocSelect(doc.id);
+                                }}
+                                className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-blue-600 accent-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                              />
+                              <div className="min-w-0">
+                                <span className="block text-[9px] font-mono uppercase text-neutral-500 font-bold">
+                                  FORMATO {String(index + 1).padStart(2, '0')}
+                                </span>
+                                <span className="block text-xs font-semibold truncate max-w-[240px]" title={doc.nombreArchivo}>
+                                  {doc.nombreArchivo}
+                                </span>
+                              </div>
+                            </div>
+
+                            {esDocFirmado ? (
+                              <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase">
+                                ✓ Firmado
+                              </span>
+                            ) : isSelected ? (
+                              <span className="shrink-0 px-2 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-semibold">
+                                Seleccionado
+                              </span>
+                            ) : (
+                              <span className="shrink-0 px-2 py-0.5 rounded-md bg-neutral-800 text-neutral-500 text-[10px]">
+                                Excluido
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                      Acceso al formulario inicial
+                    </label>
+                    <p className="text-xs text-neutral-400 bg-[#050e1b] border border-[#162e50] rounded-xl p-3">
+                      Este enlace permitirá al cliente completar los 7 pasos de su Ficha Madre de Inversionista.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
@@ -571,98 +789,120 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
 
                 <button
                   type="submit"
-                  disabled={generatingToken}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-60 disabled:pointer-events-none"
+                  disabled={generatingToken || (enlaceEsDeFirma && selectedDocIds.length === 0)}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
                 >
                   {generatingToken
                     ? enlaceEsDeFirma
                       ? 'Generando enlace de firma...'
                       : 'Generando enlace...'
                     : enlaceEsDeFirma
-                      ? 'Generar enlace de firma'
+                      ? `Generar enlace de firma (${selectedDocIds.length} formato${selectedDocIds.length === 1 ? '' : 's'})`
                       : 'Generar enlace'}
                 </button>
               </form>
 
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Tokens registrados</h4>
-                {tokens.length === 0 ? (
-                  <p className="text-xs text-neutral-500">
-                    Aún no se ha generado ningún enlace para este expediente. Si el cliente ya terminó la ficha, puedes reenviar uno nuevo para la firma.
-                  </p>
+              {/* Cuadro Único del Enlace Actual del Expediente */}
+              <div className="space-y-2 pt-2 border-t border-[#162e50]/40">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                    Enlace actual del cliente
+                  </h4>
+                  {tokens.length > 1 && (
+                    <span className="text-[10px] text-neutral-500 font-mono">
+                      (1 activo de {tokens.length} generados)
+                    </span>
+                  )}
+                </div>
+
+                {!tokenActivo ? (
+                  <div className="rounded-2xl border border-[#162e50]/40 bg-[#050e1b] p-4 text-center">
+                    <p className="text-xs text-neutral-500">
+                      Aún no se ha generado ningún enlace para este expediente. Ingresa el correo arriba y pulsa "Generar enlace" para enviar el acceso al cliente.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    {tokens.map((token) => (
-                      <div key={token.id} className="rounded-2xl border border-[#162e50]/50 bg-[#050e1b] p-3 space-y-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="space-y-1">
-                            <span
-                              className={`inline-flex px-2 py-1 rounded-full text-[10px] font-bold uppercase border ${getTokenStatusStyles(token)}`}
-                            >
-                              {getTokenStatusLabel(token)}
-                            </span>
-                            <p className="text-[10px] text-neutral-500 leading-tight max-w-[220px]">
-                              {getTokenStatusSubtitle(token)}
-                            </p>
-                          </div>
-                          <span className="text-[10px] text-neutral-500 font-mono self-start">
-                            Vence: {new Date(token.expiraEn).toLocaleString('es-PE')}
-                          </span>
-                        </div>
-
-                        <div className="text-[10px] text-neutral-500 font-mono">
-                          Paquete: {getTokenPackageLabel(token.documentosFirmaCantidad)}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 truncate text-[10px] text-neutral-400 bg-[#061325] border border-[#162e50] rounded-lg px-2 py-1">
-                            {`${origin}/onboarding/${token.token}`}
-                          </code>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleCopyTokenLink(token.token)}
-                            className="px-3 py-2 rounded-lg bg-[#0a1c36] border border-[#162e50] text-[10px] font-semibold text-white hover:bg-[#0d2140] transition-all"
-                          >
-                            Copiar enlace
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEmail(token.emailDestino, token.token)}
-                            className="px-3 py-2 rounded-lg bg-blue-600/10 border border-blue-500/30 text-[10px] font-semibold text-blue-300 hover:bg-blue-600/20 transition-all"
-                          >
-                            Enviar por correo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenWhatsApp(base.cliente.persona.telefono, token.token)}
-                            className="px-3 py-2 rounded-lg bg-emerald-600/10 border border-emerald-500/30 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-600/20 transition-all"
-                          >
-                            Enviar por WhatsApp
-                          </button>
-                        </div>
-
-                        {token.estado !== 'ACTIVO' ? (
-                          <button
-                            type="button"
-                            onClick={() => handleReactivateToken(token.id)}
-                            className="w-full px-3 py-2 rounded-lg bg-emerald-600/10 border border-emerald-500/30 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-600/20 transition-all"
-                          >
-                            Reactivar enlace
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleRevokeToken(token.id)}
-                            className="w-full px-3 py-2 rounded-lg bg-red-600/10 border border-red-500/30 text-[10px] font-semibold text-red-300 hover:bg-red-600/20 transition-all"
-                          >
-                            Cerrar enlace
-                          </button>
-                        )}
+                  <div className="rounded-2xl border border-[#162e50] bg-[#050e1b] p-4 space-y-3 shadow-lg">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${getTokenStatusStyles(tokenActivo)}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${tokenActivo.estado === 'ACTIVO' ? 'bg-emerald-400 animate-pulse' : 'bg-neutral-400'}`} />
+                          {getTokenStatusLabel(tokenActivo)}
+                        </span>
+                        <p className="text-[11px] text-neutral-400 leading-tight">
+                          {getTokenStatusSubtitle(tokenActivo)}
+                        </p>
                       </div>
-                    ))}
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] text-neutral-400 block font-mono">
+                          {tokenActivo.documentos && tokenActivo.documentos.length > 0
+                            ? `${tokenActivo.documentos.length} formatos a firmar`
+                            : tokenActivo.documentosFirmaCantidad
+                              ? `${tokenActivo.documentosFirmaCantidad} formatos`
+                              : 'Ficha Madre'}
+                        </span>
+                        <span className="text-[9px] text-neutral-500 font-mono block mt-0.5">
+                          Vence: {new Date(tokenActivo.expiraEn).toLocaleDateString('es-PE')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-[#061325] border border-[#162e50] rounded-xl p-1.5 pl-3">
+                      <code className="flex-1 truncate text-xs text-neutral-300 font-mono select-all">
+                        {`${origin}/onboarding/${tokenActivo.token}`}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyTokenLink(tokenActivo.token)}
+                        className="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-xs font-semibold border border-blue-500/30 transition-all cursor-pointer shrink-0"
+                        title="Copiar enlace"
+                      >
+                        Copiar
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEmail(tokenActivo.emailDestino, tokenActivo.token)}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600/10 border border-blue-500/30 text-xs font-semibold text-blue-300 hover:bg-blue-600/20 transition-all cursor-pointer"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Por Correo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenWhatsApp(base.cliente.persona.telefono, tokenActivo.token)}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/10 border border-emerald-500/30 text-xs font-semibold text-emerald-300 hover:bg-emerald-600/20 transition-all cursor-pointer"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                        </svg>
+                        Por WhatsApp
+                      </button>
+                    </div>
+
+                    {tokenActivo.estado !== 'ACTIVO' ? (
+                      <button
+                        type="button"
+                        onClick={() => handleReactivateToken(tokenActivo.id)}
+                        className="w-full px-3 py-2 rounded-xl bg-emerald-600/15 border border-emerald-500/30 text-xs font-semibold text-emerald-300 hover:bg-emerald-600/25 transition-all cursor-pointer"
+                      >
+                        Reactivar este enlace
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleRevokeToken(tokenActivo.id)}
+                        className="w-full px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-[11px] font-semibold text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
+                      >
+                        Cerrar / Invalidar enlace
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -690,8 +930,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
         {/* 3. MODAL DE PREVISUALIZACIÓN DE DOCUMENTO (PREMIUM A4 SIMULATOR) */}
         {previewDoc && (
           <div className="fixed inset-0 bg-neutral-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-4xl h-[90vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between">
-              {/* Header Modal */}
+            <div className="w-full max-w-5xl h-[92vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
               <div className="px-6 py-4 border-b border-[#162e50]/40 flex items-center justify-between bg-[#061325]">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500 font-mono">
@@ -701,7 +940,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 </div>
                 <button
                   onClick={() => setPreviewDoc(null)}
-                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all"
+                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -709,26 +948,23 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 </button>
               </div>
 
-              {/* Contenido A4 Scrollable */}
-              <div className="flex-1 overflow-y-auto bg-neutral-900 p-8 flex justify-center">
+              {/* Contenido A4 Scrollable con visor completo */}
+              <div className="flex-1 min-h-0 relative bg-[#e2e8f0] overflow-hidden flex flex-col items-center justify-center">
                 {loadingPreview ? (
-                  <div className="flex flex-col items-center justify-center text-neutral-400">
+                  <div className="flex flex-col items-center justify-center text-neutral-400 p-8 bg-[#050e1b] w-full h-full">
                     <svg className="animate-spin h-8 w-8 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p className="text-xs">Compilando y cargando el documento...</p>
+                    <p className="text-xs text-neutral-300">Compilando y cargando el documento...</p>
                   </div>
                 ) : (
-                  <div className="shadow-2xl border border-neutral-300 rounded-sm">
-                    {/* Se inyecta el HTML procesado directamente dentro de una caja con estilos aislados */}
-                    <iframe
-                      srcDoc={previewHtml}
-                      title="Doc Preview"
-                      className="w-[210mm] h-[297mm] bg-white border-0"
-                      sandbox="allow-same-origin"
-                    />
-                  </div>
+                  <iframe
+                    srcDoc={previewHtml}
+                    title="Doc Preview"
+                    className="w-full h-full border-0 bg-[#e2e8f0]"
+                    sandbox="allow-same-origin"
+                  />
                 )}
               </div>
 

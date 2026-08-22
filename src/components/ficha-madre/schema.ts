@@ -162,6 +162,15 @@ const domicilioSchema = z.object({
   codigo_postal: texto.default(''),
 });
 
+const domicilioOpcionalSchema = z.object({
+  direccion_completa: texto.default(''),
+  distrito: texto.default(''),
+  provincia: texto.default(''),
+  departamento: texto.default(''),
+  pais_domicilio: texto.default(''),
+  codigo_postal: texto.default(''),
+});
+
 const informacionLaboralSchema = z.object({
   situacion_laboral: textoReq,
   profesion: textoReq,
@@ -177,20 +186,20 @@ const poderRegistralSchema = z.object({
 });
 
 const apoderadoSchema = z.object({
-  nombres_apellidos: textoReq,
-  tipo_documento: textoReq,
-  numero_documento: textoReq,
-  nacionalidad: textoReq,
-  sexo: textoReq,
-  estado_civil: textoReq,
-  pais_nacimiento: textoReq,
-  fecha_nacimiento: textoReq,
-  pais_residencia: textoReq,
+  nombres_apellidos: texto.default(''),
+  tipo_documento: texto.default(''),
+  numero_documento: texto.default(''),
+  nacionalidad: texto.default(''),
+  sexo: texto.default(''),
+  estado_civil: texto.default(''),
+  pais_nacimiento: texto.default(''),
+  fecha_nacimiento: texto.default(''),
+  pais_residencia: texto.default(''),
   grado_instruccion: texto.default(''),
   es_domiciliado: z.boolean().default(true),
   correo_electronico: texto.default(''),
   telefono_celular: texto.default(''),
-  domicilio: domicilioSchema.default({
+  domicilio: domicilioOpcionalSchema.default({
     direccion_completa: '',
     distrito: '',
     provincia: '',
@@ -257,7 +266,7 @@ const baseSchema = z.object({
     pais_domicilio: '',
     codigo_postal: '',
   }),
-  direccion_correspondencia: domicilioSchema.default({
+  direccion_correspondencia: domicilioOpcionalSchema.default({
     direccion_completa: '',
     distrito: '',
     provincia: '',
@@ -398,21 +407,89 @@ export const saveInversionistaSchema = baseSchema.superRefine((data, ctx) => {
   if (!tieneOrigen) {
     ctx.addIssue({
       code: 'custom',
-      path: ['origen_fondos'],
-      message: 'Detalla al menos el origen de tus fondos',
+      path: ['origen_fondos', 'fondos_propios_detalle'],
+      message: 'Detalla al menos una fuente de procedencia u origen de tus fondos',
     });
   }
 }) as unknown as z.ZodType<FichaMadreFormValues, FichaMadreFormValues>;
 
 // Campos que se validan al avanzar desde cada paso (paso 0..6).
 export const STEP_TRIGGER_FIELDS: string[][] = [
-  ['titular'],
-  ['titular.conyuge'],
-  ['es_domiciliado', 'usar_misma_direccion_correspondencia', 'domicilio', 'direccion_correspondencia'],
-  ['informacion_laboral', 'vinculaciones'],
-  ['origen_fondos'],
-  ['tiene_apoderado', 'apoderado', 'antecedentes_penales_judiciales', 'residencia_fiscal'],
-  ['inversion'],
+  // Paso 0: Titular
+  [
+    'titular.nombres_apellidos',
+    'titular.tipo_documento',
+    'titular.numero_documento',
+    'titular.nacionalidad',
+    'titular.sexo',
+    'titular.pais_nacimiento',
+    'titular.fecha_nacimiento',
+    'titular.pais_residencia',
+    'titular.grado_instruccion',
+    'titular.estado_civil',
+    'titular.correo_electronico',
+    'titular.telefono_celular',
+    'titular.pep_institucion_cargo',
+  ],
+  // Paso 1: Cónyuge
+  [
+    'titular.conyuge.nombres_apellidos',
+    'titular.conyuge.tipo_documento',
+    'titular.conyuge.numero_documento',
+    'titular.conyuge.regimen_patrimonial',
+  ],
+  // Paso 2: Domicilio
+  [
+    'domicilio.direccion_completa',
+    'domicilio.departamento',
+    'domicilio.provincia',
+    'domicilio.distrito',
+    'domicilio.pais_domicilio',
+    'direccion_correspondencia.direccion_completa',
+    'direccion_correspondencia.departamento',
+    'direccion_correspondencia.provincia',
+    'direccion_correspondencia.distrito',
+    'direccion_correspondencia.pais_domicilio',
+  ],
+  // Paso 3: Laboral
+  [
+    'informacion_laboral.situacion_laboral',
+    'informacion_laboral.profesion',
+    'informacion_laboral.ocupacion',
+    'informacion_laboral.empresa_centro_trabajo',
+    'informacion_laboral.ingreso_promedio_anual',
+    'vinculaciones.valor_aproximado_patrimonio',
+  ],
+  // Paso 4: Origen de fondos
+  [
+    'origen_fondos.fondos_propios_detalle',
+    'origen_fondos.venta_activos_detalle',
+    'origen_fondos.financiamientos_detalle',
+    'origen_fondos.dividendos_participaciones_detalle',
+    'origen_fondos.contrato_obra_licitacion_detalle',
+    'origen_fondos.patrimonio_fideicometido_detalle',
+    'origen_fondos.otros_fondos_detalle',
+  ],
+  // Paso 5: Apoderado y Cumplimiento
+  [
+    'apoderado.nombres_apellidos',
+    'apoderado.tipo_documento',
+    'apoderado.numero_documento',
+    'apoderado.nacionalidad',
+    'apoderado.sexo',
+    'apoderado.estado_civil',
+    'apoderado.pais_nacimiento',
+    'apoderado.fecha_nacimiento',
+    'apoderado.pais_residencia',
+    'antecedentes_penales_judiciales.especificar_delitos',
+    'residencia_fiscal.paises',
+  ],
+  // Paso 6: Inversión
+  [
+    'inversion.moneda',
+    'inversion.monto_inicial',
+    'inversion.origen_recursos',
+  ],
 ];
 
 export function defaultFormValues(): FichaMadreFormValues {
@@ -601,7 +678,7 @@ export function formValuesToPayload(values: FichaMadreFormValues): SaveInversion
     },
     domicilio: values.domicilio,
     direccion_correspondencia: values.usar_misma_direccion_correspondencia
-      ? { ...values.direccion_correspondencia }
+      ? { ...values.domicilio }
       : values.direccion_correspondencia,
     informacion_laboral: values.informacion_laboral,
     apoderado: values.tiene_apoderado ? values.apoderado : values.apoderado,

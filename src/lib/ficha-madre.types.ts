@@ -133,9 +133,12 @@ export interface SaveInversionistaPayload {
 // Respuesta de GET /fichas-madre/:id (vía toFichaMadreObject)
 export interface FichaMadreResponse {
   fichaMadre: {
+    id?: string;
+    estado?: string;
     inversionista: SaveInversionistaPayload;
     metadata: {
       id_expediente?: string;
+      estado?: string;
       lugar_firma?: string;
       fecha_actual?: string;
       firmado?: boolean;
@@ -250,76 +253,111 @@ export function calcularCompletitud(payload: SaveInversionistaPayload): {
 } {
   const inv = payload;
 
-  const pasoTitular = countSection(inv.titular, [
+  // 1. Titular
+  const titularFields: (keyof TitularData)[] = [
     'nombres_apellidos', 'tipo_documento', 'numero_documento', 'nacionalidad',
     'sexo', 'pais_nacimiento', 'fecha_nacimiento', 'pais_residencia',
     'grado_instruccion', 'estado_civil', 'correo_electronico', 'telefono_celular',
-  ]);
+  ];
+  let titularDone = countSection(inv.titular, titularFields).done;
+  let titularTotal = titularFields.length;
+  if (inv.titular?.pep) {
+    titularTotal += 1;
+    if (!isEmptyValue(inv.titular.pep_institucion_cargo)) {
+      titularDone += 1;
+    }
+  }
+  const pasoTitular = { done: titularDone, total: titularTotal };
 
+  // 2. Cónyuge: si es soltero, divorciado o viudo, no requiere datos -> 100%
+  const estadoCivil = (inv.titular?.estado_civil ?? '').toUpperCase();
+  const requiereConyuge = estadoCivil === 'CASADO' || estadoCivil === 'CONVIVIENTE';
   const conyugeKeys = ['nombres_apellidos', 'tipo_documento', 'numero_documento', 'regimen_patrimonial'] as const;
   const conyuge = inv.titular?.conyuge ?? {};
-  const pasoConyuge = {
-    done: conyugeKeys.filter((k) => !isEmptyValue(conyuge[k])).length,
-    total: conyugeKeys.length,
+  const pasoConyuge = requiereConyuge
+    ? {
+        done: conyugeKeys.filter((k) => !isEmptyValue(conyuge[k])).length,
+        total: conyugeKeys.length,
+      }
+    : { done: 1, total: 1 };
+
+  // 3. Domicilio y correspondencia
+  const pasoDom = countSection(inv.domicilio, [
+    'direccion_completa', 'distrito', 'provincia', 'departamento', 'pais_domicilio',
+  ]);
+  const usaMismaCorrespondencia = inv.usar_misma_direccion_correspondencia !== false;
+  const pasoCorresp = usaMismaCorrespondencia
+    ? { done: 0, total: 0 }
+    : countSection(inv.direccion_correspondencia, [
+        'direccion_completa', 'distrito', 'provincia', 'departamento', 'pais_domicilio',
+      ]);
+  const pasoDomicilioCombined = {
+    done: pasoDom.done + pasoCorresp.done,
+    total: pasoDom.total + pasoCorresp.total,
   };
 
-  const pasoDomicilio = countSection(inv.domicilio, [
-    'direccion_completa', 'distrito', 'provincia', 'departamento', 'pais_domicilio', 'codigo_postal',
+  // 4. Laboral y vinculaciones
+  const pasoLab = countSection(inv.informacion_laboral, [
+    'situacion_laboral', 'ocupacion', 'ingreso_promedio_anual',
   ]);
-  const pasoCorrespondencia = countSection(inv.direccion_correspondencia, [
-    'direccion_completa', 'distrito', 'provincia', 'departamento', 'pais_domicilio', 'codigo_postal',
+  const pasoLaboralCombined = {
+    done: pasoLab.done,
+    total: pasoLab.total,
+  };
+
+  // 5. Origen de fondos
+  const origenKeys = Object.keys(ORIGENES_FONDOS_LABELS) as (keyof OrigenFondosData)[];
+  const filledOrigen = origenKeys.filter((k) => !isEmptyValue(inv.origen_fondos?.[k])).length;
+  const pasoOrigen = {
+    done: filledOrigen > 0 ? 1 : 0,
+    total: 1,
+  };
+
+  // 6. Apoderado y cumplimiento
+  const tieneApoderado = Boolean(inv.tiene_apoderado);
+  const pasoApod = tieneApoderado
+    ? countSection(inv.apoderado, [
+        'nombres_apellidos', 'tipo_documento', 'numero_documento', 'nacionalidad',
+        'sexo', 'fecha_nacimiento', 'pais_residencia',
+      ])
+    : { done: 0, total: 0 };
+  const investigado = Boolean(inv.antecedentes_penales_judiciales?.es_investigado_delitos);
+  const pasoAntecedentes = investigado
+    ? countSection(inv.antecedentes_penales_judiciales, ['especificar_delitos'])
+    : { done: 0, total: 0 };
+  const resideFuera = Boolean(inv.residencia_fiscal?.tiene_residencia_fiscal_extranjera);
+  const paises = inv.residencia_fiscal?.paises ?? [];
+  const pasoResidencia = resideFuera
+    ? {
+        done: paises.filter((p) => !isEmptyValue(p.pais)).length,
+        total: Math.max(1, paises.length),
+      }
+    : { done: 0, total: 0 };
+
+  const pasoApoderadoCumplimientoCombined = {
+    done: 1 + pasoApod.done + pasoAntecedentes.done + pasoResidencia.done,
+    total: 1 + pasoApod.total + pasoAntecedentes.total + pasoResidencia.total,
+  };
+
+  // 7. Inversión y cuenta bancaria
+  const pasoInversion = countSection(inv.inversion, [
+    'moneda', 'monto_inicial', 'monto_inicial_letras', 'origen_recursos', 'banco_nombre', 'numero_cuenta', 'cuenta_cci',
   ]);
 
-  const pasoTitulo = (i: { done: number; total: number }) => ({
+  const calcPct = (i: { done: number; total: number }) => ({
     done: i.done,
     total: i.total,
     pct: i.total === 0 ? 100 : Math.round((i.done / i.total) * 100),
   });
 
-  const pasoLaboral = countSection(inv.informacion_laboral, [
-    'situacion_laboral', 'profesion', 'ocupacion', 'empresa_centro_trabajo', 'ingreso_promedio_anual',
-  ]);
-  const pasoVinculaciones = countSection(inv.vinculaciones, [
-    'es_vinculado_corfid_grupo_coril', 'ha_sido_cliente_otra_fiduciaria',
-    'ha_sido_trabajador_otra_fiduciaria', 'valor_aproximado_patrimonio',
-  ]);
-
-  const origenKeys = Object.keys(ORIGENES_FONDOS_LABELS) as (keyof OrigenFondosData)[];
-  const pasoOrigen = countSection(inv.origen_fondos, origenKeys);
-
-  const pasoApoderado = countSection(inv.apoderado, [
-    'nombres_apellidos', 'tipo_documento', 'numero_documento', 'nacionalidad',
-    'sexo', 'estado_civil', 'fecha_nacimiento', 'correo_electronico', 'telefono_celular',
-  ]);
-  const pasoPoder = countSection(inv.apoderado?.poder_registral, [
-    'partida_registral', 'asiento', 'zona_registral',
-  ]);
-  const pasoAntecedentes = countSection(inv.antecedentes_penales_judiciales, [
-    'es_investigado_delitos', 'especificar_delitos',
-  ]);
-  const paises = inv.residencia_fiscal?.paises ?? [];
-  const pasoResidencia = {
-    done: paises.filter((p) => !isEmptyValue(p.pais)).length,
-    total: Math.max(1, paises.length),
-  };
-
-  const pasoInversion = countSection(inv.inversion, [
-    'moneda', 'monto_inicial', 'origen_recursos', 'banco_nombre', 'numero_cuenta', 'cuenta_cci',
-  ]);
-
   const pasos: Record<string, CompletitudPorPaso> = {
-    titular: pasoTitulo(pasoTitular),
-    conyuge: pasoTitulo(pasoConyuge),
-    domicilio: pasoTitulo(pasoDomicilio),
-    correspondencia: pasoTitulo(pasoCorrespondencia),
-    laboral: pasoTitulo(pasoLaboral),
-    vinculaciones: pasoTitulo(pasoVinculaciones),
-    origen: pasoTitulo(pasoOrigen),
-    apoderado: pasoTitulo(pasoApoderado),
-    poder: pasoTitulo(pasoPoder),
-    antecedentes: pasoTitulo(pasoAntecedentes),
-    residencia: pasoTitulo(pasoResidencia),
-    inversion: pasoTitulo(pasoInversion),
+    titular: calcPct(pasoTitular),
+    conyuge: calcPct(pasoConyuge),
+    domicilio: calcPct(pasoDomicilioCombined),
+    laboral: calcPct(pasoLaboralCombined),
+    origen: calcPct(pasoOrigen),
+    apoderado: calcPct(pasoApoderadoCumplimientoCombined),
+    inversion: calcPct(pasoInversion),
   };
 
   const secciones = Object.values(pasos);
@@ -327,7 +365,7 @@ export function calcularCompletitud(payload: SaveInversionistaPayload): {
   const total = secciones.reduce((acc, s) => acc + s.total, 0);
 
   return {
-    global: pasoTitulo({ done, total }),
+    global: calcPct({ done, total }),
     pasos,
   };
 }
