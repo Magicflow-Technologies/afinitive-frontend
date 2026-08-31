@@ -63,7 +63,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
 
   const tieneDocumentos = documentos.length > 0;
   const enlaceEsDeFirma = tieneDocumentos;
-  const enlaceTitulo = enlaceEsDeFirma ? '0. Enlace de firma del cliente' : '0. Enlace de acceso al cliente';
+  const enlaceTitulo = enlaceEsDeFirma ? '4. Enlace de firma del cliente' : '4. Enlace de acceso al cliente';
   const enlaceDescripcion = enlaceEsDeFirma
     ? 'Genera y supervisa un nuevo enlace seguro para que el cliente retome la revisión y firme los documentos sin volver a llenar la ficha.'
     : 'Genera y supervisa el token que el cliente usará para completar su formulario sin registrarse.';
