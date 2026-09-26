@@ -15,6 +15,7 @@ import {
   FieldSwitch,
   FieldText,
   FieldTextarea,
+  FieldYesNo,
   SectionCard,
 } from './fields';
 import { montoALetras } from '@/lib/numero-a-letras';
@@ -273,9 +274,13 @@ export function PasoApoderadoCumplimiento() {
       )}
 
       <SectionCard title="Antecedentes" description="Declaración sobre investigaciones o procesos judiciales.">
-        <FieldSwitch
+        {/* <FieldSwitch
           name="antecedentes_penales_judiciales.es_investigado_delitos"
           label="¿Es investigado o ha sido condenado por delitos?"
+        /> */}
+        <FieldYesNo 
+          name="antecedentes_penales_judiciales.es_investigado_delitos"
+          label="¿Es investigado o ha sido condenado por delitos?"  
         />
         {investigado && (
           <FieldTextarea
@@ -289,7 +294,7 @@ export function PasoApoderadoCumplimiento() {
       </SectionCard>
 
       <SectionCard title="Residencia fiscal (FATCA)" description="Declaración de residencia fiscal fuera de Perú.">
-        <FieldSwitch
+        <FieldYesNo
           name="residencia_fiscal.tiene_residencia_fiscal_extranjera"
           label="¿Tributa o tiene residencia fiscal fuera de Perú?"
         />
