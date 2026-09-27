@@ -125,11 +125,12 @@ export function PasoDomicilio() {
       />
       <SectionCard title="Domicilio" description="Dirección principal del titular.">
         <FieldText name="domicilio.direccion_completa" label="Dirección completa" required placeholder="Ej: Av. Javier Prado Este 1234, Dpto. 502" className="sm:col-span-2" />
+        <FieldText name="domicilio.numero" label="Número" placeholder="Ej: 1234" />
+        <FieldText name="domicilio.codigo_postal" label="Código postal" placeholder="Ej: 15036" />
         <FieldText name="domicilio.departamento" label="Departamento" required placeholder="Ej: Lima" />
         <FieldText name="domicilio.provincia" label="Provincia" required placeholder="Ej: Lima" />
         <FieldText name="domicilio.distrito" label="Distrito" required placeholder="Ej: San Isidro" />
         <FieldText name="domicilio.pais_domicilio" label="País" required placeholder="Ej: Perú" />
-        <FieldText name="domicilio.codigo_postal" label="Código postal" placeholder="Ej: 15036" />
       </SectionCard>
 
       <FieldSwitch
@@ -141,11 +142,12 @@ export function PasoDomicilio() {
       {!mismaDireccion && (
         <SectionCard title="Dirección de correspondencia" description="Dirección donde se enviará la documentación.">
           <FieldText name="direccion_correspondencia.direccion_completa" label="Dirección completa" required placeholder="Ej: Jr. Dos de Mayo 456, Of. 301" className="sm:col-span-2" />
+          <FieldText name="direccion_correspondencia.numero" label="Número" placeholder="Ej: 456" />
+          <FieldText name="direccion_correspondencia.codigo_postal" label="Código postal" placeholder="Ej: 15074" />
           <FieldText name="direccion_correspondencia.departamento" label="Departamento" required placeholder="Ej: Lima" />
           <FieldText name="direccion_correspondencia.provincia" label="Provincia" required placeholder="Ej: Lima" />
           <FieldText name="direccion_correspondencia.distrito" label="Distrito" required placeholder="Ej: Miraflores" />
           <FieldText name="direccion_correspondencia.pais_domicilio" label="País" required placeholder="Ej: Perú" />
-          <FieldText name="direccion_correspondencia.codigo_postal" label="Código postal" placeholder="Ej: 15074" />
         </SectionCard>
       )}
     </div>

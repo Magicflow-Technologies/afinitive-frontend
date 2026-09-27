@@ -33,6 +33,7 @@ export interface FichaMadreFormValues {
   };
   domicilio: {
     direccion_completa: string;
+    numero: string;
     distrito: string;
     provincia: string;
     departamento: string;
@@ -41,6 +42,7 @@ export interface FichaMadreFormValues {
   };
   direccion_correspondencia: {
     direccion_completa: string;
+    numero: string;
     distrito: string;
     provincia: string;
     departamento: string;
@@ -70,6 +72,7 @@ export interface FichaMadreFormValues {
     telefono_celular: string;
     domicilio: {
       direccion_completa: string;
+      numero: string;
       distrito: string;
       provincia: string;
       departamento: string;
@@ -155,6 +158,7 @@ const titularSchema = z.object({
 
 const domicilioSchema = z.object({
   direccion_completa: textoReq,
+  numero: texto.default(''),
   distrito: textoReq,
   provincia: textoReq,
   departamento: textoReq,
@@ -164,6 +168,7 @@ const domicilioSchema = z.object({
 
 const domicilioOpcionalSchema = z.object({
   direccion_completa: texto.default(''),
+  numero: texto.default(''),
   distrito: texto.default(''),
   provincia: texto.default(''),
   departamento: texto.default(''),
@@ -201,6 +206,7 @@ const apoderadoSchema = z.object({
   telefono_celular: texto.default(''),
   domicilio: domicilioOpcionalSchema.default({
     direccion_completa: '',
+    numero: '',
     distrito: '',
     provincia: '',
     departamento: '',
@@ -260,6 +266,7 @@ const baseSchema = z.object({
   titular: titularSchema,
   domicilio: domicilioSchema.default({
     direccion_completa: '',
+    numero: '',
     distrito: '',
     provincia: '',
     departamento: '',
@@ -268,6 +275,7 @@ const baseSchema = z.object({
   }),
   direccion_correspondencia: domicilioOpcionalSchema.default({
     direccion_completa: '',
+    numero: '',
     distrito: '',
     provincia: '',
     departamento: '',
@@ -522,8 +530,8 @@ export function defaultFormValues(): FichaMadreFormValues {
         fecha_regimen: '',
       },
     },
-    domicilio: { direccion_completa: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
-    direccion_correspondencia: { direccion_completa: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
+    domicilio: { direccion_completa: '', numero: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
+    direccion_correspondencia: { direccion_completa: '', numero: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
     informacion_laboral: { situacion_laboral: '', profesion: '', ocupacion: '', empresa_centro_trabajo: '', ingreso_promedio_anual: '' },
     apoderado: {
       nombres_apellidos: '',
@@ -539,7 +547,7 @@ export function defaultFormValues(): FichaMadreFormValues {
       es_domiciliado: true,
       correo_electronico: '',
       telefono_celular: '',
-      domicilio: { direccion_completa: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
+      domicilio: { direccion_completa: '', numero: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
       poder_registral: { partida_registral: '', asiento: '', zona_registral: '' },
     },
     vinculaciones: {
@@ -598,7 +606,7 @@ export function mergeFetchedIntoDefaults(
 
   const mergeDomicilio = (src: SaveInversionistaPayload['domicilio'], dst: FichaMadreFormValues['domicilio']) => {
     if (!src) return;
-    for (const key of ['direccion_completa', 'distrito', 'provincia', 'departamento', 'pais_domicilio', 'codigo_postal'] as const) {
+    for (const key of ['direccion_completa', 'numero', 'distrito', 'provincia', 'departamento', 'pais_domicilio', 'codigo_postal'] as const) {
       if (!isBlank(src[key])) dst[key] = String(src[key]);
     }
   };
