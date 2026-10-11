@@ -176,9 +176,42 @@ export const api = {
   },
 
   /**
-   * Inicia sesión con usuario y contraseña.
+   * Inicia sesión con usuario y contraseña (puede requerir 2FA).
    */
   login: (username: string, password: string) => {
+    return fetchAPI<
+      | {
+          requires2FA?: false;
+          access_token: string;
+          user: {
+            id: string;
+            username: string;
+            rol: string;
+            persona: {
+              id: string;
+              nombres: string;
+              apellidos: string;
+              correo: string;
+            };
+          };
+        }
+      | {
+          requires2FA: true;
+          challengeToken: string;
+          metodo: string;
+          destino: string;
+          message: string;
+        }
+    >('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  /**
+   * Valida el código 2FA emitido al correo.
+   */
+  verify2FA: (challengeToken: string, codigo: string) => {
     return fetchAPI<{
       access_token: string;
       user: {
@@ -192,14 +225,114 @@ export const api = {
           correo: string;
         };
       };
-    }>('/auth/login', {
+    }>('/auth/2fa/verify', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ challengeToken, codigo }),
     });
   },
 
   /**
-   * Obtiene la lista de clientes registrados.
+   * Reenvía un nuevo código 2FA.
+   */
+  resend2FA: (challengeToken: string) => {
+    return fetchAPI<{ message: string; destino: string }>('/auth/2fa/resend', {
+      method: 'POST',
+      body: JSON.stringify({ challengeToken }),
+    });
+  },
+
+  /**
+   * Crea un usuario para un cliente existente.
+   */
+  crearUsuarioCliente: (payload: {
+    clienteId: string;
+    username: string;
+    password: string;
+    requiere2FA?: boolean;
+  }) => {
+    return fetchAPI<any>('/usuarios/cliente', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Restablece la contraseña de un usuario.
+   */
+  resetPasswordUsuario: (usuarioId: string, newPassword: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/reset-password`, {
+      method: 'PUT',
+      body: JSON.stringify({ newPassword }),
+    });
+  },
+
+  /**
+   * Alterna el estado activo / inactivo de un usuario.
+   */
+  toggleActivoUsuario: (usuarioId: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/toggle-activo`, {
+      method: 'PUT',
+    });
+  },
+
+  /**
+   * Alterna la exigencia de 2FA para un usuario.
+   */
+  toggle2FAUsuario: (usuarioId: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/toggle-2fa`, {
+      method: 'PUT',
+    });
+  },
+
+  /**
+   * Obtiene todos los usuarios del sistema (internos y clientes) con rol y persona.
+   */
+  obtenerUsuarios: () => {
+    return fetchAPI<any[]>('/usuarios');
+  },
+
+  /**
+   * Obtiene todos los roles disponibles en el sistema.
+   */
+  obtenerRoles: () => {
+    return fetchAPI<any[]>('/roles');
+  },
+
+  /**
+   * Crea un usuario interno del sistema (Analista, Operador, Admin, etc.)
+   */
+  crearUsuarioSistema: (payload: {
+    tipoDocumento: string;
+    numeroDocumento: string;
+    nombres: string;
+    apellidos: string;
+    correo: string;
+    telefono?: string;
+    cargo: string;
+    area?: string;
+    rolId: string;
+    username: string;
+    password: string;
+    requiere2FA?: boolean;
+  }) => {
+    return fetchAPI<any>('/usuarios/sistema', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Actualiza el rol asignado a un usuario interno.
+   */
+  cambiarRolUsuario: (usuarioId: string, rolId: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/rol`, {
+      method: 'PUT',
+      body: JSON.stringify({ rolId }),
+    });
+  },
+
+  /**
+   * Obtiene la lista de clientes registrados (con su relación de usuario).
    */
   obtenerClientes: () => {
     return fetchAPI<any[]>('/clientes');
