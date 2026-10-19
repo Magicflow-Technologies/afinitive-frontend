@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, FichaMadre } from '@/services/api';
 import { formatTitleCase } from '@/lib/formatters';
+import { ModalImportacionMasiva } from '@/components/ModalImportacionMasiva';
 
 export default function ExpedientesList() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function ExpedientesList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [creatingFicha, setCreatingFicha] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createForm, setCreateForm] = useState({
@@ -143,15 +145,27 @@ export default function ExpedientesList() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-950/20"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
-          </svg>
-          Crear ficha de cliente
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0a1c36] hover:bg-[#0d2344] border border-[#162e50] text-blue-300 hover:text-white font-semibold text-sm transition-all shadow-md cursor-pointer"
+          >
+            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Importar Fichas Masivas
+          </button>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-950/20 cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Crear ficha de cliente
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 bg-[#0a1c36]/20 border border-[#162e50]/30 rounded-2xl p-4">
@@ -406,6 +420,16 @@ export default function ExpedientesList() {
           </div>
         </div>
       )}
+
+      {/* MODAL DE IMPORTACIÓN MASIVA Y DIGITALIZACIÓN */}
+      <ModalImportacionMasiva
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccessReload={async () => {
+          const data = await api.obtenerFichasMadre();
+          setFichas(data);
+        }}
+      />
     </div>
   );
 }

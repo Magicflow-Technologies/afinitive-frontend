@@ -36,6 +36,16 @@ export interface Firma {
   firmanteEmail?: string;
 }
 
+export interface DocumentoPlantilla {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  archivo: string;
+  formato?: string;
+  version?: number;
+  activo?: boolean;
+}
+
 export interface DocumentoGeneral {
   id: string;
   fichaMadreId: string;
@@ -467,4 +477,83 @@ export const api = {
       body: JSON.stringify({ estado }),
     });
   },
+
+  /**
+   * Sube el Excel de clientes para la importación masiva.
+   */
+  importarExcelMasivo: async (file: File, empleadoId?: string): Promise<{
+    totalLeidos: number;
+    totalExitosos: number;
+    totalFallidos: number;
+    exitosos: Array<{
+      fila: number;
+      fichaMadreId: string;
+      codigoFicha: string;
+      documento: string;
+      cliente: string;
+    }>;
+    errores: Array<{
+      fila: number;
+      documento?: string;
+      cliente?: string;
+      motivo: string;
+    }>;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (empleadoId) {
+      formData.append('empleadoId', empleadoId);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/importacion-masiva/excel`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error en la importación: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Obtiene la lista de plantillas de documentos del sistema ordenadas.
+   */
+  obtenerPlantillasDocumento: (): Promise<DocumentoPlantilla[]> => {
+    return fetchAPI<DocumentoPlantilla[]>('/documentos-plantilla');
+  },
+
+  /**
+   * Sube un documento/PDF histórico directamente a Supabase Storage y lo asocia a la Ficha Madre como FIRMADO.
+   */
+  subirDocumentoHistorico: async (
+    fichaMadreId: string,
+    file: File,
+    nombreArchivo?: string,
+    documentoPlantillaId?: string,
+  ): Promise<DocumentoGeneral> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (nombreArchivo) {
+      formData.append('nombreArchivo', nombreArchivo);
+    }
+    if (documentoPlantillaId) {
+      formData.append('documentoPlantillaId', documentoPlantillaId);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/documentos-generales/upload-masivo/${fichaMadreId}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error al subir documento: ${response.status}`);
+    }
+
+    return response.json();
+  },
 };
+
