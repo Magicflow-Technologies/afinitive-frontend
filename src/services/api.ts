@@ -446,7 +446,7 @@ export const api = {
    * Obtiene el contenido HTML de la previsualización del documento.
    */
   obtenerDocumentoPreview: (documentoId: string) => {
-    return fetchAPI<{ html: string }>(`/documentos-generales/${documentoId}/preview`);
+    return fetchAPI<{ html?: string | null; url?: string | null }>(`/documentos-generales/${documentoId}/preview`);
   },
 
   /**
