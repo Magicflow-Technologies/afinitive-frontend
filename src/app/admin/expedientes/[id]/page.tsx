@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from 'react';
 import { api, FichaMadre, TokenAcceso, DocumentoGeneral } from '@/services/api';
 import Link from 'next/link';
 import { FichaMadreWizard } from '@/components/FichaMadreWizard';
+import { ModalDocumentosFicha } from '@/components/ModalDocumentosFicha';
 import type { FichaMadreResponse } from '@/lib/ficha-madre.types';
 
 const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
@@ -59,6 +60,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [updatingEstado, setUpdatingEstado] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   const tieneDocumentos = documentos.length > 0;
@@ -170,11 +172,22 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
 
   const handlePreviewDoc = async (doc: DocumentoGeneral) => {
     setPreviewDoc(doc);
+
+    // Si ya cuenta con URL de archivo en Supabase Storage (http/https), mostrar directamente el PDF real
+    if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+      setPreviewHtml('');
+      setLoadingPreview(false);
+      return;
+    }
     setPreviewHtml('');
     setLoadingPreview(true);
     try {
       const preview = await api.obtenerDocumentoPreview(doc.id);
-      setPreviewHtml(preview.html);
+      if (preview.url) {
+        setPreviewDoc((prev) => (prev ? { ...prev, rutaArchivo: preview.url! } : null));
+      } else {
+        setPreviewHtml(preview.html || '');
+      }
     } catch (err: any) {
       console.error(err);
       setPreviewHtml(`<div class="p-8 text-red-500 font-bold text-center">${err.message || 'Error al cargar la previsualización.'}</div>`);
@@ -425,6 +438,19 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
 
         {/* Acciones y Estado del Expediente */}
         <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto pl-11 md:pl-0">
+          {!tieneDocumentos && (
+            <button
+              type="button"
+              onClick={() => setShowUploadModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0a1c36] hover:bg-[#0d2344] border border-[#162e50] hover:border-blue-500/50 text-blue-300 hover:text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+              title="Subir o digitalizar documentos del expediente"
+            >
+              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span>Subir Documentos</span>
+            </button>
+          )}
           {base.estado !== 'APROBADA' ? (
             <>
               <button
@@ -556,7 +582,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                 <p className="text-xs text-neutral-400 mt-1">Formatos listados en el expediente de inversiones.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className={`grid grid-cols-1 ${!tieneDocumentos ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
@@ -602,11 +628,36 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                     Solo admin o analista pueden generar formatos.
                   </div>
                 )}
+
+                {/* BOTÓN AL COSTADO DE GENERAR FORMATOS (Solo visible si aún no tiene documentos) */}
+                {!tieneDocumentos && (
+                  <button
+                    type="button"
+                    onClick={() => setShowUploadModal(true)}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/20 transition-all cursor-pointer"
+                    title="Subir o digitalizar documentos del cliente directamente a Supabase"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span>Subir Documentos</span>
+                  </button>
+                )}
               </div>
 
               {!tieneDocumentos ? (
                 <div className="text-center py-10 border border-dashed border-[#162e50]/40 rounded-2xl text-neutral-500 text-xs">
-                  No hay formatos generados en este expediente. Completa la Ficha Madre y usa el botón de relleno para crearlos.
+                  <p className="mb-3">No hay formatos generados en este expediente. Puedes autocompletar los formatos o subir los documentos digitalizados del cliente.</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowUploadModal(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs shadow-md shadow-emerald-950/20 transition-all cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span>Subir Documentos</span>
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -637,9 +688,23 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                             </span>
                           )}
 
+                          {doc.rutaArchivo && doc.rutaArchivo.startsWith('http') && (
+                            <a
+                              href={doc.rutaArchivo}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg bg-[#050e1b] border border-[#162e50] hover:bg-[#0a1c36] text-emerald-400 hover:text-emerald-300 transition-all cursor-pointer"
+                              title="Abrir PDF en pestaña nueva"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          )}
+
                           <button
                             onClick={() => handlePreviewDoc(doc)}
-                            className="p-1.5 rounded-lg bg-[#050e1b] border border-[#162e50] hover:bg-[#0a1c36] text-blue-400 hover:text-blue-300 transition-all"
+                            className="p-1.5 rounded-lg bg-[#050e1b] border border-[#162e50] hover:bg-[#0a1c36] text-blue-400 hover:text-blue-300 transition-all cursor-pointer"
                             title="Previsualizar formato"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -936,16 +1001,38 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500 font-mono">
                     Previsualización de Documento
                   </span>
-                  <h3 className="text-base font-bold text-white truncate max-w-lg">{previewDoc.nombreArchivo}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <h3 className="text-base font-bold text-white truncate max-w-lg">{previewDoc.nombreArchivo}</h3>
+                    {previewDoc.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                        PDF en Supabase
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={() => setPreviewDoc(null)}
-                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
+                <div className="flex items-center gap-2">
+                  {previewDoc.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') && (
+                    <a
+                      href={previewDoc.rutaArchivo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 border border-blue-500/40 hover:bg-blue-600/30 text-blue-300 text-xs font-semibold transition-all cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      <span>Abrir en pestaña nueva</span>
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setPreviewDoc(null)}
+                    className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               {/* Contenido A4 Scrollable con visor completo */}
@@ -958,6 +1045,12 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                     </svg>
                     <p className="text-xs text-neutral-300">Compilando y cargando el documento...</p>
                   </div>
+                ) : previewDoc?.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') ? (
+                  <iframe
+                    src={previewDoc.rutaArchivo}
+                    title="PDF Preview"
+                    className="w-full h-full border-0"
+                  />
                 ) : (
                   <iframe
                     srcDoc={previewHtml}
@@ -980,6 +1073,14 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
             </div>
           </div>
         )}
+
+        {/* MODAL DE SUBIDA INDIVIDUAL DE DOCUMENTOS */}
+        <ModalDocumentosFicha
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          ficha={base}
+          onSuccessReload={loadExpediente}
+        />
 
         {autocompleteConfirmOpen && (
           <div className="fixed inset-0 z-[70] bg-neutral-950/80 backdrop-blur-md flex items-center justify-center p-4">

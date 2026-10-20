@@ -32,6 +32,7 @@ export interface TitularData {
 
 export interface DomicilioData {
   direccion_completa?: string;
+  numero?: string;
   distrito?: string;
   provincia?: string;
   departamento?: string;

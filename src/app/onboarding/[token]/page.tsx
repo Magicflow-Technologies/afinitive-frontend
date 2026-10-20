@@ -353,11 +353,20 @@ export default function OnboardingFlowPage() {
 
   const handlePreviewDoc = async (doc: DocumentoGeneral) => {
     setPreviewDoc(doc);
+    if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+      setPreviewHtml('');
+      setLoadingPreview(false);
+      return;
+    }
     setPreviewHtml('');
     setLoadingPreview(true);
     try {
       const preview = await api.obtenerDocumentoPreview(doc.id);
-      setPreviewHtml(preview.html);
+      if (preview.url) {
+        setPreviewDoc((prev) => (prev ? { ...prev, rutaArchivo: preview.url! } : null));
+      } else {
+        setPreviewHtml(preview.html || '');
+      }
     } catch (err: any) {
       console.error(err);
       setPreviewHtml(`<div class="p-8 text-red-500 font-bold text-center">${err.message || 'Error al cargar la previsualización.'}</div>`);
@@ -884,16 +893,38 @@ export default function OnboardingFlowPage() {
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500 font-mono">
                   Previsualización de Documento
                 </span>
-                <h3 className="text-base font-bold text-white truncate max-w-lg">{previewDoc.nombreArchivo}</h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <h3 className="text-base font-bold text-white truncate max-w-lg">{previewDoc.nombreArchivo}</h3>
+                  {previewDoc.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                      PDF en Supabase
+                    </span>
+                  )}
+                </div>
               </div>
-              <button
-                onClick={() => setPreviewDoc(null)}
-                className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-2">
+                {previewDoc.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') && (
+                  <a
+                    href={previewDoc.rutaArchivo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/40 hover:bg-violet-600/30 text-violet-300 text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span>Abrir en pestaña nueva</span>
+                  </a>
+                )}
+                <button
+                  onClick={() => setPreviewDoc(null)}
+                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 min-h-0 relative bg-[#e2e8f0] overflow-hidden flex flex-col items-center justify-center">
@@ -903,8 +934,14 @@ export default function OnboardingFlowPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <p className="text-xs text-neutral-300">Compilando y cargando el documento...</p>
+                  <p className="text-xs text-neutral-300">Cargando el documento...</p>
                 </div>
+              ) : previewDoc?.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') ? (
+                <iframe
+                  src={previewDoc.rutaArchivo}
+                  title="PDF Preview"
+                  className="w-full h-full border-0"
+                />
               ) : (
                 <iframe
                   srcDoc={previewHtml}

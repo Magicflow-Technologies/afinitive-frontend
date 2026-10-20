@@ -36,6 +36,16 @@ export interface Firma {
   firmanteEmail?: string;
 }
 
+export interface DocumentoPlantilla {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  archivo: string;
+  formato?: string;
+  version?: number;
+  activo?: boolean;
+}
+
 export interface DocumentoGeneral {
   id: string;
   fichaMadreId: string;
@@ -176,9 +186,42 @@ export const api = {
   },
 
   /**
-   * Inicia sesión con usuario y contraseña.
+   * Inicia sesión con usuario y contraseña (puede requerir 2FA).
    */
   login: (username: string, password: string) => {
+    return fetchAPI<
+      | {
+          requires2FA?: false;
+          access_token: string;
+          user: {
+            id: string;
+            username: string;
+            rol: string;
+            persona: {
+              id: string;
+              nombres: string;
+              apellidos: string;
+              correo: string;
+            };
+          };
+        }
+      | {
+          requires2FA: true;
+          challengeToken: string;
+          metodo: string;
+          destino: string;
+          message: string;
+        }
+    >('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  /**
+   * Valida el código 2FA emitido al correo.
+   */
+  verify2FA: (challengeToken: string, codigo: string) => {
     return fetchAPI<{
       access_token: string;
       user: {
@@ -192,14 +235,114 @@ export const api = {
           correo: string;
         };
       };
-    }>('/auth/login', {
+    }>('/auth/2fa/verify', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ challengeToken, codigo }),
     });
   },
 
   /**
-   * Obtiene la lista de clientes registrados.
+   * Reenvía un nuevo código 2FA.
+   */
+  resend2FA: (challengeToken: string) => {
+    return fetchAPI<{ message: string; destino: string }>('/auth/2fa/resend', {
+      method: 'POST',
+      body: JSON.stringify({ challengeToken }),
+    });
+  },
+
+  /**
+   * Crea un usuario para un cliente existente.
+   */
+  crearUsuarioCliente: (payload: {
+    clienteId: string;
+    username: string;
+    password: string;
+    requiere2FA?: boolean;
+  }) => {
+    return fetchAPI<any>('/usuarios/cliente', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Restablece la contraseña de un usuario.
+   */
+  resetPasswordUsuario: (usuarioId: string, newPassword: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/reset-password`, {
+      method: 'PUT',
+      body: JSON.stringify({ newPassword }),
+    });
+  },
+
+  /**
+   * Alterna el estado activo / inactivo de un usuario.
+   */
+  toggleActivoUsuario: (usuarioId: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/toggle-activo`, {
+      method: 'PUT',
+    });
+  },
+
+  /**
+   * Alterna la exigencia de 2FA para un usuario.
+   */
+  toggle2FAUsuario: (usuarioId: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/toggle-2fa`, {
+      method: 'PUT',
+    });
+  },
+
+  /**
+   * Obtiene todos los usuarios del sistema (internos y clientes) con rol y persona.
+   */
+  obtenerUsuarios: () => {
+    return fetchAPI<any[]>('/usuarios');
+  },
+
+  /**
+   * Obtiene todos los roles disponibles en el sistema.
+   */
+  obtenerRoles: () => {
+    return fetchAPI<any[]>('/roles');
+  },
+
+  /**
+   * Crea un usuario interno del sistema (Analista, Operador, Admin, etc.)
+   */
+  crearUsuarioSistema: (payload: {
+    tipoDocumento: string;
+    numeroDocumento: string;
+    nombres: string;
+    apellidos: string;
+    correo: string;
+    telefono?: string;
+    cargo: string;
+    area?: string;
+    rolId: string;
+    username: string;
+    password: string;
+    requiere2FA?: boolean;
+  }) => {
+    return fetchAPI<any>('/usuarios/sistema', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Actualiza el rol asignado a un usuario interno.
+   */
+  cambiarRolUsuario: (usuarioId: string, rolId: string) => {
+    return fetchAPI<any>(`/usuarios/${usuarioId}/rol`, {
+      method: 'PUT',
+      body: JSON.stringify({ rolId }),
+    });
+  },
+
+  /**
+   * Obtiene la lista de clientes registrados (con su relación de usuario).
    */
   obtenerClientes: () => {
     return fetchAPI<any[]>('/clientes');
@@ -303,7 +446,7 @@ export const api = {
    * Obtiene el contenido HTML de la previsualización del documento.
    */
   obtenerDocumentoPreview: (documentoId: string) => {
-    return fetchAPI<{ html: string }>(`/documentos-generales/${documentoId}/preview`);
+    return fetchAPI<{ html?: string | null; url?: string | null }>(`/documentos-generales/${documentoId}/preview`);
   },
 
   /**
@@ -334,4 +477,83 @@ export const api = {
       body: JSON.stringify({ estado }),
     });
   },
+
+  /**
+   * Sube el Excel de clientes para la importación masiva.
+   */
+  importarExcelMasivo: async (file: File, empleadoId?: string): Promise<{
+    totalLeidos: number;
+    totalExitosos: number;
+    totalFallidos: number;
+    exitosos: Array<{
+      fila: number;
+      fichaMadreId: string;
+      codigoFicha: string;
+      documento: string;
+      cliente: string;
+    }>;
+    errores: Array<{
+      fila: number;
+      documento?: string;
+      cliente?: string;
+      motivo: string;
+    }>;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (empleadoId) {
+      formData.append('empleadoId', empleadoId);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/importacion-masiva/excel`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error en la importación: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Obtiene la lista de plantillas de documentos del sistema ordenadas.
+   */
+  obtenerPlantillasDocumento: (): Promise<DocumentoPlantilla[]> => {
+    return fetchAPI<DocumentoPlantilla[]>('/documentos-plantilla');
+  },
+
+  /**
+   * Sube un documento/PDF histórico directamente a Supabase Storage y lo asocia a la Ficha Madre como FIRMADO.
+   */
+  subirDocumentoHistorico: async (
+    fichaMadreId: string,
+    file: File,
+    nombreArchivo?: string,
+    documentoPlantillaId?: string,
+  ): Promise<DocumentoGeneral> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (nombreArchivo) {
+      formData.append('nombreArchivo', nombreArchivo);
+    }
+    if (documentoPlantillaId) {
+      formData.append('documentoPlantillaId', documentoPlantillaId);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/documentos-generales/upload-masivo/${fichaMadreId}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error al subir documento: ${response.status}`);
+    }
+
+    return response.json();
+  },
 };
+

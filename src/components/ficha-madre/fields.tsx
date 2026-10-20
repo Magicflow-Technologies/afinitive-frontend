@@ -1,27 +1,46 @@
-import { Controller, get, useFormContext, type FieldPath } from 'react-hook-form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DatePicker } from '@/components/ui/date-picker';
-import { cn } from '@/lib/utils';
-import type { FichaMadreFormValues } from './schema';
+import {
+  Controller,
+  get,
+  useFormContext,
+  type FieldPath,
+} from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
+import { cn } from "@/lib/utils";
+import type { FichaMadreFormValues } from "./schema";
 
 export type OptionValue = string | { value: string; label: string };
 
-function normOptions(options: readonly OptionValue[]): Array<{ value: string; label: string }> {
-  return options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
+function normOptions(
+  options: readonly OptionValue[],
+): Array<{ value: string; label: string }> {
+  return options.map((o) =>
+    typeof o === "string" ? { value: o, label: o } : o,
+  );
 }
 
 function FieldError({ name }: { name: FieldPath<FichaMadreFormValues> }) {
   const { formState } = useFormContext<FichaMadreFormValues>();
   const error = get(formState.errors, name) as { message?: string } | undefined;
   if (!error?.message) return null;
-  return <p className="text-xs font-medium text-rose-400 flex items-center gap-1 mt-0.5">{error.message}</p>;
+  return (
+    <p className="text-xs font-medium text-rose-400 flex items-center gap-1 mt-0.5">
+      {error.message}
+    </p>
+  );
 }
 
 export function SectionCard({
@@ -36,12 +55,25 @@ export function SectionCard({
   className?: string;
 }) {
   return (
-    <Card className={cn('bg-[#08172e]/90 border border-[#162e52] shadow-xl backdrop-blur-md rounded-2xl gap-3 p-5 sm:p-6', className)}>
+    <Card
+      className={cn(
+        "bg-[#08172e]/90 border border-[#162e52] shadow-xl backdrop-blur-md rounded-2xl gap-3 p-5 sm:p-6",
+        className,
+      )}
+    >
       <CardHeader className="p-0 mb-4">
-        <CardTitle className="text-base font-bold text-white tracking-wide">{title}</CardTitle>
-        {description && <CardDescription className="text-xs text-blue-200/70 leading-relaxed mt-1">{description}</CardDescription>}
+        <CardTitle className="text-base font-bold text-white tracking-wide">
+          {title}
+        </CardTitle>
+        {description && (
+          <CardDescription className="text-xs text-blue-200/70 leading-relaxed mt-1">
+            {description}
+          </CardDescription>
+        )}
       </CardHeader>
-      <CardContent className="p-0 grid grid-cols-1 gap-4.5 sm:grid-cols-2">{children}</CardContent>
+      <CardContent className="p-0 grid grid-cols-1 gap-4.5 sm:grid-cols-2">
+        {children}
+      </CardContent>
     </Card>
   );
 }
@@ -51,7 +83,7 @@ export function FieldText({
   label,
   required,
   placeholder,
-  type = 'text',
+  type = "text",
   inputMode,
   className,
 }: {
@@ -67,17 +99,20 @@ export function FieldText({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => (
-        <div className={cn('flex flex-col gap-1.5', className)}>
-          <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+        <div className={cn("flex flex-col gap-1.5", className)}>
+          <Label
+            htmlFor={name}
+            className="text-xs font-semibold text-neutral-300"
+          >
             {label}
             {required && <span className="text-rose-400 font-bold"> *</span>}
           </Label>
           <Input
             id={name}
             type={type}
-            inputMode={inputMode as 'decimal' | undefined}
+            inputMode={inputMode as "decimal" | undefined}
             placeholder={placeholder}
-            value={String(field.value ?? '')}
+            value={String(field.value ?? "")}
             onChange={field.onChange}
             onBlur={field.onBlur}
           />
@@ -88,34 +123,38 @@ export function FieldText({
   );
 }
 
-export function formatThousands(value: string | number | undefined | null): string {
-  if (value === undefined || value === null) return '';
-  const str = String(value).replace(/,/g, '').trim();
-  if (str === '') return '';
+export function formatThousands(
+  value: string | number | undefined | null,
+): string {
+  if (value === undefined || value === null) return "";
+  const str = String(value).replace(/,/g, "").trim();
+  if (str === "") return "";
 
-  const parts = str.split('.');
-  const intPart = parts[0].replace(/\D/g, '');
-  if (!intPart && parts.length === 1) return '';
+  const parts = str.split(".");
+  const intPart = parts[0].replace(/\D/g, "");
+  if (!intPart && parts.length === 1) return "";
 
-  const formattedInt = intPart ? Number(intPart).toLocaleString('en-US') : '0';
+  const formattedInt = intPart ? Number(intPart).toLocaleString("en-US") : "0";
   if (parts.length > 1) {
-    const decPart = parts[1].replace(/\D/g, '').slice(0, 2);
+    const decPart = parts[1].replace(/\D/g, "").slice(0, 2);
     return `${formattedInt}.${decPart}`;
   }
   return formattedInt;
 }
 
-export function cleanMoneyNumber(value: string | number | undefined | null): string {
-  if (value === undefined || value === null) return '';
-  return String(value).replace(/,/g, '').trim();
+export function cleanMoneyNumber(
+  value: string | number | undefined | null,
+): string {
+  if (value === undefined || value === null) return "";
+  return String(value).replace(/,/g, "").trim();
 }
 
 export function FieldMoney({
   name,
   label,
   required,
-  placeholder = 'Ej: 12,000.00',
-  currency = 'USD',
+  placeholder = "Ej: 12,000.00",
+  currency = "USD",
   showWords = false,
   className,
 }: {
@@ -127,29 +166,41 @@ export function FieldMoney({
   showWords?: boolean;
   className?: string;
 }) {
-  const currencySymbol = currency.toUpperCase() === 'PEN' ? 'S/' : currency.toUpperCase() === 'EUR' ? '€' : '$';
+  const currencySymbol =
+    currency.toUpperCase() === "PEN"
+      ? "S/"
+      : currency.toUpperCase() === "EUR"
+        ? "€"
+        : "$";
 
   return (
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => {
-        const rawValue = String(field.value ?? '');
+        const rawValue = String(field.value ?? "");
         const displayValue = formatThousands(rawValue);
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           const input = e.target.value;
-          const cleaned = input.replace(/[^0-9.]/g, '');
-          const parts = cleaned.split('.');
-          const sanitized = parts[0] + (parts.length > 1 ? '.' + parts.slice(1).join('').slice(0, 2) : '');
+          const cleaned = input.replace(/[^0-9.]/g, "");
+          const parts = cleaned.split(".");
+          const sanitized =
+            parts[0] +
+            (parts.length > 1 ? "." + parts.slice(1).join("").slice(0, 2) : "");
           field.onChange(sanitized);
         };
 
         return (
-          <div className={cn('flex flex-col gap-1.5', className)}>
+          <div className={cn("flex flex-col gap-1.5", className)}>
             <div className="flex items-center justify-between">
-              <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+              <Label
+                htmlFor={name}
+                className="text-xs font-semibold text-neutral-300"
+              >
                 {label}
-                {required && <span className="text-rose-400 font-bold"> *</span>}
+                {required && (
+                  <span className="text-rose-400 font-bold"> *</span>
+                )}
               </Label>
               {displayValue && (
                 <span className="text-[11px] font-mono font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md">
@@ -186,7 +237,7 @@ export function FieldSelect({
   label,
   options,
   required,
-  placeholder = 'Seleccionar...',
+  placeholder = "Seleccionar...",
   className,
 }: {
   name: FieldPath<FichaMadreFormValues>;
@@ -201,19 +252,28 @@ export function FieldSelect({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => (
-        <div className={cn('flex flex-col gap-1.5', className)}>
-          <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+        <div className={cn("flex flex-col gap-1.5", className)}>
+          <Label
+            htmlFor={name}
+            className="text-xs font-semibold text-neutral-300"
+          >
             {label}
             {required && <span className="text-rose-400 font-bold"> *</span>}
           </Label>
           <Select
             id={name}
-            value={String(field.value ?? '')}
+            value={String(field.value ?? "")}
             onChange={(e) => field.onChange(e.target.value)}
           >
-            <option value="" className="bg-[#0a192f] text-neutral-400">{placeholder}</option>
+            <option value="" className="bg-[#0a192f] text-neutral-400">
+              {placeholder}
+            </option>
             {opts.map((o) => (
-              <option key={o.value} value={o.value} className="bg-[#0a192f] text-neutral-100">
+              <option
+                key={o.value}
+                value={o.value}
+                className="bg-[#0a192f] text-neutral-100"
+              >
                 {o.label}
               </option>
             ))}
@@ -242,15 +302,18 @@ export function FieldTextarea({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => (
-        <div className={cn('flex flex-col gap-1.5', className)}>
-          <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+        <div className={cn("flex flex-col gap-1.5", className)}>
+          <Label
+            htmlFor={name}
+            className="text-xs font-semibold text-neutral-300"
+          >
             {label}
             {required && <span className="text-rose-400 font-bold"> *</span>}
           </Label>
           <Textarea
             id={name}
             placeholder={placeholder}
-            value={String(field.value ?? '')}
+            value={String(field.value ?? "")}
             onChange={field.onChange}
             onBlur={field.onBlur}
           />
@@ -278,20 +341,27 @@ export function FieldRadio({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => (
-        <div className={cn('flex flex-col gap-1.5', className)}>
+        <div className={cn("flex flex-col gap-1.5", className)}>
           <Label className="text-xs font-semibold text-neutral-300">
             {label}
             {required && <span className="text-rose-400 font-bold"> *</span>}
           </Label>
           <RadioGroup
-            value={String(field.value ?? '')}
+            value={String(field.value ?? "")}
             onValueChange={field.onChange}
             className="flex flex-wrap gap-x-5 gap-y-2.5 pt-1"
           >
             {options.map((opt) => (
               <div key={opt} className="flex items-center gap-2">
-                <RadioGroupItem value={opt} id={`${name}-${opt}`} className="border-[#1b355a] text-blue-500" />
-                <Label htmlFor={`${name}-${opt}`} className="font-normal text-xs text-neutral-200 cursor-pointer">
+                <RadioGroupItem
+                  value={opt}
+                  id={`${name}-${opt}`}
+                  className="border-[#1b355a] text-blue-500"
+                />
+                <Label
+                  htmlFor={`${name}-${opt}`}
+                  className="font-normal text-xs text-neutral-200 cursor-pointer"
+                >
                   {opt}
                 </Label>
               </div>
@@ -322,13 +392,19 @@ export function FieldSwitch({
         <div
           onClick={() => field.onChange(!field.value)}
           className={cn(
-            'flex items-center justify-between gap-4 rounded-xl border border-[#162e52] bg-[#09172c] p-3.5 transition-all hover:border-blue-500/40 cursor-pointer select-none',
+            "flex items-center justify-between gap-4 rounded-xl border border-[#162e52] bg-[#09172c] p-3.5 transition-all hover:border-blue-500/40 cursor-pointer select-none",
             className,
           )}
         >
           <div>
-            <Label className="text-xs font-semibold text-neutral-200 cursor-pointer">{label}</Label>
-            {description && <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">{description}</p>}
+            <Label className="text-xs font-semibold text-neutral-200 cursor-pointer">
+              {label}
+            </Label>
+            {description && (
+              <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+                {description}
+              </p>
+            )}
           </div>
           <Switch
             checked={!!field.value}
@@ -337,6 +413,77 @@ export function FieldSwitch({
           />
         </div>
       )}
+    />
+  );
+}
+
+export function FieldYesNo({
+  name,
+  label,
+  description,
+  required,
+  className,
+}: {
+  name: FieldPath<FichaMadreFormValues>;
+  label: string;
+  description?: string;
+  required?: boolean;
+  className?: string;
+}) {
+  return (
+    <Controller<FichaMadreFormValues>
+      name={name}
+      render={({ field }) => {
+        const value = field.value;
+        return (
+          <div
+            className={cn(
+              "flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#162e52] bg-[#09172c] p-4 transition-all hover:border-blue-500/30 sm:col-span-2",
+              className,
+            )}
+          >
+            <div className="flex-1">
+              <Label className="text-xs font-semibold text-neutral-200">
+                {label}
+                {required && <span className="text-rose-400 font-bold"> *</span>}
+              </Label>
+              {description && (
+                <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+                  {description}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-6 shrink-0">
+              {/* Opción SÍ */}
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <Checkbox
+                  checked={value === true}
+                  onCheckedChange={() => field.onChange(true)}
+                  className="border-[#1b355a] data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                />
+                <span className="text-xs font-semibold text-neutral-200 tracking-wide">
+                  SÍ
+                </span>
+              </label>
+
+              {/* Opción NO */}
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <Checkbox
+                  checked={value === false}
+                  onCheckedChange={() => field.onChange(false)}
+                  className="border-[#1b355a] data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                />
+                <span className="text-xs font-semibold text-neutral-200 tracking-wide">
+                  NO
+                </span>
+              </label>
+            </div>
+
+            <FieldError name={name} />
+          </div>
+        );
+      }}
     />
   );
 }
@@ -356,7 +503,12 @@ export function FieldCheckbox({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => (
-        <div className={cn('flex items-start gap-3 rounded-xl border border-[#162e52] bg-[#09172c] p-3.5 transition-all hover:border-blue-500/30', className)}>
+        <div
+          className={cn(
+            "flex items-start gap-3 rounded-xl border border-[#162e52] bg-[#09172c] p-3.5 transition-all hover:border-blue-500/30",
+            className,
+          )}
+        >
           <Checkbox
             id={name}
             checked={!!field.value}
@@ -364,8 +516,17 @@ export function FieldCheckbox({
             className="mt-0.5 border-[#1b355a]"
           />
           <div>
-            <Label htmlFor={name} className="text-xs font-semibold text-neutral-200 cursor-pointer">{label}</Label>
-            {description && <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">{description}</p>}
+            <Label
+              htmlFor={name}
+              className="text-xs font-semibold text-neutral-200 cursor-pointer"
+            >
+              {label}
+            </Label>
+            {description && (
+              <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+                {description}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -388,14 +549,17 @@ export function FieldDate({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => (
-        <div className={cn('flex flex-col gap-1.5', className)}>
-          <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+        <div className={cn("flex flex-col gap-1.5", className)}>
+          <Label
+            htmlFor={name}
+            className="text-xs font-semibold text-neutral-300"
+          >
             {label}
             {required && <span className="text-rose-400 font-bold"> *</span>}
           </Label>
           <DatePicker
             id={name}
-            value={String(field.value ?? '')}
+            value={String(field.value ?? "")}
             onChange={field.onChange}
           />
           <FieldError name={name} />
@@ -406,59 +570,61 @@ export function FieldDate({
 }
 
 export interface CardBrandInfo {
-  brand: 'VISA' | 'MASTERCARD' | 'AMEX' | 'DINERS' | 'GENERIC';
+  brand: "VISA" | "MASTERCARD" | "AMEX" | "DINERS" | "GENERIC";
   label: string;
   badgeStyle: string;
 }
 
 export function detectCardBrand(numStr: string): CardBrandInfo {
-  const clean = numStr.replace(/\D/g, '');
+  const clean = numStr.replace(/\D/g, "");
   if (/^4/.test(clean)) {
     return {
-      brand: 'VISA',
-      label: 'Visa',
-      badgeStyle: 'bg-blue-600/20 border-blue-500/50 text-blue-400 font-black',
+      brand: "VISA",
+      label: "Visa",
+      badgeStyle: "bg-blue-600/20 border-blue-500/50 text-blue-400 font-black",
     };
   }
   if (/^(5[1-5]|2[2-7])/.test(clean)) {
     return {
-      brand: 'MASTERCARD',
-      label: 'Mastercard',
-      badgeStyle: 'bg-amber-600/20 border-amber-500/50 text-amber-400 font-black',
+      brand: "MASTERCARD",
+      label: "Mastercard",
+      badgeStyle:
+        "bg-amber-600/20 border-amber-500/50 text-amber-400 font-black",
     };
   }
   if (/^3[47]/.test(clean)) {
     return {
-      brand: 'AMEX',
-      label: 'Amex',
-      badgeStyle: 'bg-cyan-600/20 border-cyan-500/50 text-cyan-300 font-black',
+      brand: "AMEX",
+      label: "Amex",
+      badgeStyle: "bg-cyan-600/20 border-cyan-500/50 text-cyan-300 font-black",
     };
   }
   if (/^3(?:0[0-5]|[68])/.test(clean)) {
     return {
-      brand: 'DINERS',
-      label: 'Diners',
-      badgeStyle: 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300 font-black',
+      brand: "DINERS",
+      label: "Diners",
+      badgeStyle:
+        "bg-indigo-600/20 border-indigo-500/50 text-indigo-300 font-black",
     };
   }
   return {
-    brand: 'GENERIC',
-    label: 'Cuenta',
-    badgeStyle: 'bg-neutral-800 border-neutral-700 text-neutral-400 font-bold',
+    brand: "GENERIC",
+    label: "Cuenta",
+    badgeStyle: "bg-neutral-800 border-neutral-700 text-neutral-400 font-bold",
   };
 }
 
 export function formatAccountNumber(value: string | undefined | null): string {
-  if (!value) return '';
-  const digits = value.replace(/\D/g, '');
-  if (!digits) return '';
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
 
   // Amex (15 dígitos: 4-6-5)
   if (/^3[47]/.test(digits)) {
     const p1 = digits.slice(0, 4);
     const p2 = digits.slice(4, 10);
     const p3 = digits.slice(10, 15);
-    return [p1, p2, p3].filter(Boolean).join('-');
+    return [p1, p2, p3].filter(Boolean).join("-");
   }
 
   // Cuenta BCP tradicional (13-14 dígitos empezando por 191/193)
@@ -467,7 +633,7 @@ export function formatAccountNumber(value: string | undefined | null): string {
     const p2 = digits.slice(3, 10);
     const p3 = digits.slice(10, 11);
     const p4 = digits.slice(11, 13);
-    return [p1, p2, p3, p4].filter(Boolean).join('-');
+    return [p1, p2, p3, p4].filter(Boolean).join("-");
   }
 
   // Tarjetas Visa, Mastercard o cuentas generales (bloques de 4: XXXX-XXXX-XXXX-XXXX)
@@ -475,43 +641,43 @@ export function formatAccountNumber(value: string | undefined | null): string {
   for (let i = 0; i < digits.length && i < 20; i += 4) {
     chunks.push(digits.slice(i, i + 4));
   }
-  return chunks.join('-');
+  return chunks.join("-");
 }
 
 export function formatCCI(value: string | undefined | null): string {
-  if (!value) return '';
-  const digits = value.replace(/\D/g, '').slice(0, 20);
-  if (!digits) return '';
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "").slice(0, 20);
+  if (!digits) return "";
 
   const p1 = digits.slice(0, 3);
   const p2 = digits.slice(3, 6);
   const p3 = digits.slice(6, 18);
   const p4 = digits.slice(18, 20);
 
-  return [p1, p2, p3, p4].filter(Boolean).join('-');
+  return [p1, p2, p3, p4].filter(Boolean).join("-");
 }
 
 export const BANCOS_CCI_PREFIX: Record<string, string> = {
-  '002': 'BCP',
-  '011': 'BBVA',
-  '003': 'Interbank',
-  '009': 'Scotiabank',
-  '038': 'BanBif',
-  '022': 'Santander',
-  '018': 'Banco de la Nación',
-  '053': 'Banco GNB',
-  '056': 'Pichincha',
-  '805': 'Caja Arequipa',
-  '803': 'Caja Huancayo',
-  '808': 'Caja Piura',
-  '801': 'Caja Sullana',
+  "002": "BCP",
+  "011": "BBVA",
+  "003": "Interbank",
+  "009": "Scotiabank",
+  "038": "BanBif",
+  "022": "Santander",
+  "018": "Banco de la Nación",
+  "053": "Banco GNB",
+  "056": "Pichincha",
+  "805": "Caja Arequipa",
+  "803": "Caja Huancayo",
+  "808": "Caja Piura",
+  "801": "Caja Sullana",
 };
 
 export function FieldAccountNumber({
   name,
   label,
   required,
-  placeholder = 'Ej: 4557-8901-2345-6789 o 191-2848571-0-79',
+  placeholder = "Ej: 4557-8901-2345-6789 o 191-2848571-0-79",
   className,
 }: {
   name: FieldPath<FichaMadreFormValues>;
@@ -524,9 +690,12 @@ export function FieldAccountNumber({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => {
-        const rawValue = String(field.value ?? '');
+        const rawValue = String(field.value ?? "");
         const displayValue = formatAccountNumber(rawValue);
-        const brandInfo = rawValue.replace(/\D/g, '').length >= 1 ? detectCardBrand(rawValue) : null;
+        const brandInfo =
+          rawValue.replace(/\D/g, "").length >= 1
+            ? detectCardBrand(rawValue)
+            : null;
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           const input = e.target.value;
@@ -535,14 +704,24 @@ export function FieldAccountNumber({
         };
 
         return (
-          <div className={cn('flex flex-col gap-1.5', className)}>
+          <div className={cn("flex flex-col gap-1.5", className)}>
             <div className="flex items-center justify-between">
-              <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+              <Label
+                htmlFor={name}
+                className="text-xs font-semibold text-neutral-300"
+              >
                 {label}
-                {required && <span className="text-rose-400 font-bold"> *</span>}
+                {required && (
+                  <span className="text-rose-400 font-bold"> *</span>
+                )}
               </Label>
-              {brandInfo && brandInfo.brand !== 'GENERIC' && (
-                <span className={cn('text-[10px] tracking-wider px-2 py-0.5 rounded border uppercase', brandInfo.badgeStyle)}>
+              {brandInfo && brandInfo.brand !== "GENERIC" && (
+                <span
+                  className={cn(
+                    "text-[10px] tracking-wider px-2 py-0.5 rounded border uppercase",
+                    brandInfo.badgeStyle,
+                  )}
+                >
                   {brandInfo.label}
                 </span>
               )}
@@ -570,7 +749,7 @@ export function FieldCCI({
   name,
   label,
   required,
-  placeholder = 'Ej: 002-191-002848571079-65',
+  placeholder = "Ej: 002-191-002848571079-65",
   className,
 }: {
   name: FieldPath<FichaMadreFormValues>;
@@ -583,10 +762,11 @@ export function FieldCCI({
     <Controller<FichaMadreFormValues>
       name={name}
       render={({ field }) => {
-        const rawValue = String(field.value ?? '');
+        const rawValue = String(field.value ?? "");
         const displayValue = formatCCI(rawValue);
-        const digits = rawValue.replace(/\D/g, '');
-        const bancoDetectado = digits.length >= 3 ? BANCOS_CCI_PREFIX[digits.slice(0, 3)] : null;
+        const digits = rawValue.replace(/\D/g, "");
+        const bancoDetectado =
+          digits.length >= 3 ? BANCOS_CCI_PREFIX[digits.slice(0, 3)] : null;
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           const input = e.target.value;
@@ -595,11 +775,16 @@ export function FieldCCI({
         };
 
         return (
-          <div className={cn('flex flex-col gap-1.5', className)}>
+          <div className={cn("flex flex-col gap-1.5", className)}>
             <div className="flex items-center justify-between">
-              <Label htmlFor={name} className="text-xs font-semibold text-neutral-300">
+              <Label
+                htmlFor={name}
+                className="text-xs font-semibold text-neutral-300"
+              >
                 {label}
-                {required && <span className="text-rose-400 font-bold"> *</span>}
+                {required && (
+                  <span className="text-rose-400 font-bold"> *</span>
+                )}
               </Label>
               {bancoDetectado && (
                 <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
