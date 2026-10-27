@@ -358,13 +358,13 @@ export function ModalImportacionMasiva({
   };
 
   return (
-    <div className="fixed inset-0 bg-neutral-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-4xl bg-[#061325] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col my-6 max-h-[92vh]">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full max-w-4xl bg-white border border-[#e7ebf1] rounded-3xl overflow-hidden shadow-2xl flex flex-col my-6 max-h-[92vh]">
         
         {/* CABECERA DEL MODAL */}
-        <div className="px-6 py-4 border-b border-[#162e50]/40 flex items-center justify-between bg-[#0a1c36]/40 shrink-0">
+        <div className="px-6 py-4 border-b border-[#e7ebf1] flex items-center justify-between bg-[#f7f8fb] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600/30 to-violet-600/30 border border-blue-500/40 flex items-center justify-center text-blue-400">
+            <div className="w-10 h-10 rounded-2xl bg-[#caa344]/10 border border-[#caa344]/20 flex items-center justify-center text-[#caa344]">
               {paso === 'excel' ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -380,14 +380,14 @@ export function ModalImportacionMasiva({
               )}
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">
+              <h2 className="text-base font-bold text-[#10233f] tracking-tight">
                 {paso === 'excel'
                   ? 'Importar Fichas Masivas por Excel'
                   : paso === 'asistente_docs'
                   ? 'Digitalización de Documentos por Cliente'
                   : 'Resumen de la Importación'}
               </h2>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-[#8d9aae]">
                 {paso === 'excel'
                   ? 'Carga masiva de expedientes y generación correlativa FM-2026-XXXXXX.'
                   : paso === 'asistente_docs'
@@ -399,7 +399,7 @@ export function ModalImportacionMasiva({
 
           <button
             onClick={handleCerrarTodo}
-            className="p-2 rounded-xl bg-[#050e1b] border border-[#162e50] hover:bg-[#0a1c36] text-neutral-400 hover:text-white transition-all cursor-pointer"
+            className="p-2 rounded-xl bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#8d9aae] hover:text-[#10233f] transition-all cursor-pointer shadow-xs"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -408,7 +408,7 @@ export function ModalImportacionMasiva({
         </div>
 
         {/* CONTENIDO SCROLLEABLE */}
-        <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1">
+        <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1 bg-white">
 
           {/* ======================================================== */}
           {/* PASO 1: CARGA DE ARCHIVO EXCEL                           */}
@@ -426,10 +426,10 @@ export function ModalImportacionMasiva({
                 }}
                 className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 ${
                   isDraggingExcel
-                    ? 'border-blue-400 bg-blue-500/15 scale-[1.01]'
+                    ? 'border-[#caa344] bg-[#caa344]/10 scale-[1.01]'
                     : selectedFile
-                    ? 'border-emerald-500/50 bg-emerald-500/5'
-                    : 'border-[#162e50] hover:border-blue-500/50 bg-[#050e1b]/60 hover:bg-[#0a1c36]/20'
+                    ? 'border-emerald-300 bg-emerald-50/50'
+                    : 'border-[#e7ebf1] hover:border-[#caa344]/60 bg-[#f7f8fb] hover:bg-[#f7f8fb]/80'
                 }`}
               >
                 <input
@@ -441,7 +441,7 @@ export function ModalImportacionMasiva({
                 />
 
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                  selectedFile ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-600/10 text-blue-400'
+                  selectedFile ? 'bg-emerald-100 text-emerald-700' : 'bg-[#caa344]/15 text-[#caa344]'
                 }`}>
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -450,20 +450,20 @@ export function ModalImportacionMasiva({
 
                 {selectedFile ? (
                   <div>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700">
                       ✓ Archivo seleccionado
                     </span>
-                    <p className="text-sm font-bold text-white mt-2 font-mono">{selectedFile.name}</p>
-                    <p className="text-xs text-neutral-400">{(selectedFile.size / 1024).toFixed(1)} KB</p>
-                    <span className="text-[11px] text-blue-400 underline underline-offset-2 mt-2 block">
+                    <p className="text-sm font-bold text-[#10233f] mt-2 font-mono">{selectedFile.name}</p>
+                    <p className="text-xs text-[#8d9aae]">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                    <span className="text-[11px] text-[#caa344] hover:text-[#b8923a] underline underline-offset-2 mt-2 block">
                       Haz clic si deseas cambiar de archivo
                     </span>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm font-semibold text-white">Haz clic aquí o arrastra tu archivo Excel</p>
-                    <p className="text-xs text-neutral-400 mt-1">Formatos admitidos: .xlsx o .xls</p>
-                    <p className="text-[11px] text-neutral-500 mt-3 max-w-sm mx-auto">
+                    <p className="text-sm font-semibold text-[#10233f]">Haz clic aquí o arrastra tu archivo Excel</p>
+                    <p className="text-xs text-[#8d9aae] mt-1">Formatos admitidos: .xlsx o .xls</p>
+                    <p className="text-[11px] text-[#8d9aae] mt-3 max-w-sm mx-auto">
                       El archivo registrará a los clientes y luego podrás subir los documentos firmados que tenga cada uno.
                     </p>
                   </div>
@@ -471,8 +471,8 @@ export function ModalImportacionMasiva({
               </div>
 
               {importError && (
-                <div className="p-4 rounded-2xl bg-red-950/20 border border-red-900/40 text-red-300 text-xs flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <span>{importError}</span>
@@ -484,7 +484,7 @@ export function ModalImportacionMasiva({
                   type="button"
                   onClick={handleCerrarTodo}
                   disabled={importing}
-                  className="px-5 py-2.5 rounded-xl border border-[#162e50] hover:bg-[#0a1c36] text-neutral-300 text-xs font-semibold transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#17233a] text-xs font-semibold transition-all cursor-pointer shadow-xs"
                 >
                   Cancelar
                 </button>
@@ -492,7 +492,7 @@ export function ModalImportacionMasiva({
                   type="button"
                   onClick={handleUploadExcel}
                   disabled={!selectedFile || importing}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-xs transition-all shadow-lg shadow-blue-950/30 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  className="px-6 py-2.5 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white font-semibold text-xs transition-all shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {importing ? (
                     <>
@@ -524,43 +524,43 @@ export function ModalImportacionMasiva({
               {/* Barra de progreso de clientes */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-neutral-400">
+                  <span className="text-[#8d9aae]">
                     Cliente {clienteIndex + 1} de {clientesExitosos.length}
                   </span>
-                  <span className="text-blue-400 font-bold">
+                  <span className="text-[#caa344] font-bold">
                     {Math.round(((clienteIndex + 1) / clientesExitosos.length) * 100)}% de clientes recorridos
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-[#050e1b] border border-[#162e50] overflow-hidden">
+                <div className="h-1.5 rounded-full bg-[#e7ebf1] overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-300"
+                    className="h-full bg-[#caa344] transition-all duration-300"
                     style={{ width: `${((clienteIndex + 1) / clientesExitosos.length) * 100}%` }}
                   />
                 </div>
               </div>
 
               {/* Ficha resumen del cliente actual */}
-              <div className="p-4 rounded-2xl bg-[#0a1c36]/40 border border-[#162e50] flex items-center justify-between gap-4 flex-wrap">
+              <div className="p-4 rounded-2xl bg-[#f7f8fb] border border-[#e7ebf1] flex items-center justify-between gap-4 flex-wrap shadow-xs">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 rounded-md">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#caa344] bg-[#caa344]/10 border border-[#caa344]/20 px-2.5 py-0.5 rounded-md">
                       {clienteActual.codigoFicha}
                     </span>
-                    <span className="text-xs font-mono text-neutral-400">
-                      Doc: <strong className="text-neutral-200">{clienteActual.documento}</strong>
+                    <span className="text-xs font-mono text-[#8d9aae]">
+                      Doc: <strong className="text-[#17233a]">{clienteActual.documento}</strong>
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-white mt-1">{clienteActual.cliente}</h3>
+                  <h3 className="text-base font-bold text-[#10233f] mt-1">{clienteActual.cliente}</h3>
                 </div>
 
                 {/* Badge de documentos subidos de este cliente */}
                 <div className="flex items-center gap-2">
                   <div className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
                     totalSubidosCliente === 7
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                       : totalSubidosCliente > 0
-                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                      : 'bg-neutral-800/50 border-neutral-700/60 text-neutral-400'
+                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                      : 'bg-white border-[#e7ebf1] text-[#8d9aae]'
                   }`}>
                     <span>
                       {totalSubidosCliente === 7
@@ -575,13 +575,13 @@ export function ModalImportacionMasiva({
 
               {/* Mensajes de feedback */}
               {docUploadFeedback && (
-                <div className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                <div className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 shadow-xs ${
                   docUploadFeedback.tipo === 'success'
-                    ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-300'
-                    : 'bg-red-950/20 border-red-800/40 text-red-300'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-red-50 border-red-200 text-red-700'
                 }`}>
                   <span>{docUploadFeedback.texto}</span>
-                  <button onClick={() => setDocUploadFeedback(null)} className="text-neutral-400 hover:text-white cursor-pointer">✕</button>
+                  <button onClick={() => setDocUploadFeedback(null)} className="text-[#8d9aae] hover:text-[#17233a] cursor-pointer">✕</button>
                 </div>
               )}
 
@@ -592,26 +592,26 @@ export function ModalImportacionMasiva({
                 onDrop={(e) => {
                   e.preventDefault();
                   setIsDraggingBatch(false);
-                  if (e.dataTransfer.files?.length) handleBatchFiles(e.dataTransfer.files);
+                  if (e.dataTransfer.files?.[0]) handleBatchFiles(e.dataTransfer.files);
                 }}
                 className={`p-4 rounded-2xl border-2 border-dashed transition-all text-center flex flex-col items-center justify-center gap-1.5 ${
                   isDraggingBatch
-                    ? 'border-blue-400 bg-blue-500/15'
-                    : 'border-[#162e50] hover:border-blue-500/40 bg-[#050e1b]/40'
+                    ? 'border-[#caa344] bg-[#caa344]/10'
+                    : 'border-[#e7ebf1] hover:border-[#caa344]/60 bg-[#f7f8fb]'
                 }`}
               >
-                <div className="flex items-center gap-2 text-xs text-neutral-300 font-semibold">
-                  <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 text-xs text-[#17233a] font-semibold">
+                  <svg className="w-4 h-4 text-[#caa344]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                   <span>¿Tienes varios archivos del cliente? Arrástralos todos aquí juntos</span>
                 </div>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-[#8d9aae]">
                   El sistema detectará automáticamente cada documento por su nombre (ej. ficha, beneficiario, etc.) y lo colocará en su respectiva ranura.
                 </p>
                 {batchUploading && (
-                  <div className="flex items-center gap-2 text-xs text-blue-400 mt-1 font-semibold animate-pulse">
-                    <svg className="animate-spin h-3.5 w-3.5 text-blue-400" fill="none" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 text-xs text-[#caa344] mt-1 font-semibold animate-pulse">
+                    <svg className="animate-spin h-3.5 w-3.5 text-[#caa344]" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -623,10 +623,10 @@ export function ModalImportacionMasiva({
               {/* GRID DE LAS 7 RANURAS INDIVIDUALES */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-[#17233a] uppercase tracking-wider">
                     Casilleros Oficiales (7 Documentos)
                   </span>
-                  <span className="text-[11px] text-neutral-500">
+                  <span className="text-[11px] text-[#8d9aae]">
                     Solo sube los que tengas disponibles, no es obligatorio tener todos
                   </span>
                 </div>
@@ -639,34 +639,34 @@ export function ModalImportacionMasiva({
                     return (
                       <div
                         key={slot.idOrder}
-                        className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
+                        className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 shadow-xs ${
                           docSubido
-                            ? 'bg-emerald-950/15 border-emerald-500/30'
-                            : 'bg-[#050e1b]/60 border-[#162e50] hover:border-neutral-600'
+                            ? 'bg-emerald-50/40 border-emerald-200'
+                            : 'bg-white border-[#e7ebf1] hover:border-[#caa344]/50'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <h4 className="text-xs font-bold text-white truncate">{slot.nombre}</h4>
-                            <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">{slot.subtitulo}</p>
+                            <h4 className="text-xs font-bold text-[#10233f] truncate">{slot.nombre}</h4>
+                            <p className="text-[11px] text-[#8d9aae] line-clamp-1 mt-0.5">{slot.subtitulo}</p>
                           </div>
 
                           {docSubido ? (
-                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-bold text-emerald-400">
+                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-200 text-[10px] font-bold text-emerald-800">
                               ✓ Subido
                             </span>
                           ) : (
-                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-neutral-800 border border-neutral-700 text-[10px] text-neutral-400 font-medium">
+                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-[#f7f8fb] border border-[#e7ebf1] text-[10px] text-[#8d9aae] font-medium">
                               Pendiente
                             </span>
                           )}
                         </div>
 
                         {/* Estado o acción */}
-                        <div className="pt-2 border-t border-[#162e50]/40 flex items-center justify-between gap-2 text-xs">
+                        <div className="pt-2 border-t border-[#e7ebf1] flex items-center justify-between gap-2 text-xs">
                           {docSubido ? (
                             <>
-                              <span className="text-[11px] text-neutral-300 truncate max-w-[170px]" title={docSubido.nombre}>
+                              <span className="text-[11px] text-[#17233a] truncate max-w-[170px]" title={docSubido.nombre}>
                                 📄 {docSubido.nombre}
                               </span>
                               <div className="flex items-center gap-2 shrink-0">
@@ -674,11 +674,11 @@ export function ModalImportacionMasiva({
                                   href={docSubido.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline"
+                                  className="text-[11px] text-[#caa344] hover:text-[#b8923a] font-semibold underline"
                                 >
                                   Ver PDF
                                 </a>
-                                <label className="text-[11px] text-neutral-400 hover:text-neutral-200 cursor-pointer">
+                                <label className="text-[11px] text-[#8d9aae] hover:text-[#17233a] cursor-pointer">
                                   Cambiar
                                   <input
                                     type="file"
@@ -691,15 +691,15 @@ export function ModalImportacionMasiva({
                             </>
                           ) : (
                             <>
-                              <span className="text-[11px] text-neutral-500">Sin archivo adjunto</span>
-                              <label className={`px-3 py-1 rounded-lg border text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                              <span className="text-[11px] text-[#8d9aae]">Sin archivo adjunto</span>
+                              <label className={`px-3 py-1 rounded-lg border text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs ${
                                 isUploadingThis
-                                  ? 'bg-blue-600/30 border-blue-500 text-blue-300 pointer-events-none'
-                                  : 'bg-[#0a1c36] hover:bg-blue-600/30 border-[#162e50] hover:border-blue-500/50 text-blue-300'
+                                  ? 'bg-[#caa344]/20 border-[#caa344] text-[#caa344] pointer-events-none'
+                                  : 'bg-white hover:bg-[#f7f8fb] border-[#e7ebf1] hover:border-[#caa344] text-[#caa344]'
                               }`}>
                                 {isUploadingThis ? (
                                   <>
-                                    <svg className="animate-spin h-3 w-3 text-blue-300" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin h-3 w-3 text-[#caa344]" fill="none" viewBox="0 0 24 24">
                                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
@@ -731,12 +731,12 @@ export function ModalImportacionMasiva({
               </div>
 
               {/* Botones de navegación del asistente */}
-              <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#162e50]/40">
+              <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#e7ebf1]">
                 <button
                   type="button"
                   onClick={handleAnteriorCliente}
                   disabled={clienteIndex === 0}
-                  className="px-4 py-2 rounded-xl border border-[#162e50] hover:bg-[#0a1c36] text-neutral-400 hover:text-white text-xs font-semibold transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#8d9aae] hover:text-[#17233a] text-xs font-semibold transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-xs"
                 >
                   ← Cliente anterior
                 </button>
@@ -745,14 +745,14 @@ export function ModalImportacionMasiva({
                   <button
                     type="button"
                     onClick={() => setPaso('resumen')}
-                    className="px-4 py-2 rounded-xl border border-neutral-700/60 hover:bg-[#0a1c36] text-neutral-400 hover:text-white text-xs font-semibold transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#8d9aae] hover:text-[#17233a] text-xs font-semibold transition-all cursor-pointer shadow-xs"
                   >
                     Finalizar y ver resumen
                   </button>
                   <button
                     type="button"
                     onClick={handleSiguienteCliente}
-                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all cursor-pointer shadow-md shadow-blue-950/20"
+                    className="px-5 py-2 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white text-xs font-semibold transition-all cursor-pointer shadow-xs"
                   >
                     {clienteIndex === clientesExitosos.length - 1 ? 'Finalizar todo →' : 'Siguiente cliente →'}
                   </button>
@@ -766,40 +766,40 @@ export function ModalImportacionMasiva({
           {/* ======================================================== */}
           {paso === 'resumen' && (
             <div className="space-y-6 text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-white tracking-tight">¡Proceso de Carga Completado!</h3>
-                <p className="text-xs text-neutral-400 mt-1">
+                <h3 className="text-xl font-bold text-[#10233f] tracking-tight">¡Proceso de Carga Completado!</h3>
+                <p className="text-xs text-[#8d9aae] mt-1">
                   Se importaron {clientesExitosos.length} clientes. Cada expediente quedó registrado con los documentos que subiste.
                 </p>
               </div>
 
               {/* Lista resumen de clientes y sus documentos */}
               {clientesExitosos.length > 0 && (
-                <div className="text-left bg-[#050e1b] border border-[#162e50] rounded-2xl p-4 space-y-2 max-h-56 overflow-y-auto">
-                  <span className="text-xs font-bold text-neutral-300 block mb-2">
+                <div className="text-left bg-[#f7f8fb] border border-[#e7ebf1] rounded-2xl p-4 space-y-2 max-h-56 overflow-y-auto shadow-xs">
+                  <span className="text-xs font-bold text-[#10233f] block mb-2">
                     Detalle de Expedientes y Documentación:
                   </span>
                   {clientesExitosos.map((cli) => {
                     const count = Object.keys(documentosSubidos[cli.fichaMadreId] || {}).length;
                     return (
-                      <div key={cli.fichaMadreId} className="flex items-center justify-between gap-3 p-2 rounded-xl bg-[#0a1c36]/40 border border-[#162e50]/40 text-xs">
+                      <div key={cli.fichaMadreId} className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white border border-[#e7ebf1] text-xs">
                         <div>
-                          <span className="text-[10px] font-mono font-bold text-blue-400 mr-2">{cli.codigoFicha}</span>
-                          <span className="text-white font-medium">{cli.cliente}</span>
-                          <span className="text-neutral-400 font-mono text-[11px] ml-2">({cli.documento})</span>
+                          <span className="text-[10px] font-mono font-bold text-[#caa344] mr-2">{cli.codigoFicha}</span>
+                          <span className="text-[#10233f] font-medium">{cli.cliente}</span>
+                          <span className="text-[#8d9aae] font-mono text-[11px] ml-2">({cli.documento})</span>
                         </div>
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
                           count === 7
-                            ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+                            ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
                             : count > 0
-                            ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
-                            : 'bg-neutral-800 text-neutral-400'
+                            ? 'bg-amber-50 border border-amber-200 text-amber-700'
+                            : 'bg-neutral-100 text-neutral-500'
                         }`}>
                           {count === 7 ? '7/7 Completo' : count > 0 ? `${count}/7 documentos` : 'Sin docs'}
                         </span>
@@ -811,13 +811,13 @@ export function ModalImportacionMasiva({
 
               {/* Errores reportados si los hubo */}
               {erroresFilas.length > 0 && (
-                <div className="text-left bg-red-950/15 border border-red-900/30 rounded-2xl p-4 space-y-2">
-                  <span className="text-xs font-bold text-red-300 block">
+                <div className="text-left bg-red-50 border border-red-200 rounded-2xl p-4 space-y-2">
+                  <span className="text-xs font-bold text-red-700 block">
                     Filas con observaciones ({erroresFilas.length}):
                   </span>
                   <div className="max-h-32 overflow-y-auto space-y-1 pr-1">
                     {erroresFilas.map((err, i) => (
-                      <p key={i} className="text-[11px] text-red-300/80 font-mono">
+                      <p key={i} className="text-[11px] text-red-600 font-mono">
                         Fila #{err.fila}: {err.motivo}
                       </p>
                     ))}
@@ -828,7 +828,7 @@ export function ModalImportacionMasiva({
               <button
                 type="button"
                 onClick={handleCerrarTodo}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-xs transition-all shadow-lg shadow-blue-950/30 cursor-pointer"
+                className="w-full py-3 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
               >
                 Volver a la lista de expedientes
               </button>

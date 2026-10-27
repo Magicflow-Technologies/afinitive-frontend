@@ -548,12 +548,12 @@ export default function OnboardingFlowPage() {
   // Si está cargando
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-[#061325] text-neutral-100 font-sans">
-        <svg className="animate-spin h-8 w-8 text-violet-500 mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <div className="min-h-screen flex flex-col justify-center items-center bg-[#f7f8fb] text-[#10233f] font-sans">
+        <svg className="animate-spin h-8 w-8 text-[#caa344] mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p className="text-sm text-neutral-400">Verificando acceso y cargando datos...</p>
+        <p className="text-sm text-[#8d9aae]">Verificando acceso y cargando datos...</p>
       </div>
     );
   }
@@ -561,17 +561,17 @@ export default function OnboardingFlowPage() {
   // Si hay error
   if (error || !perfil) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-[#061325] px-6 text-neutral-100 font-sans text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-900/30 flex items-center justify-center text-red-500 mb-6">
+      <div className="min-h-screen flex flex-col justify-center items-center bg-[#f7f8fb] px-6 text-[#10233f] font-sans text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 mb-6 shadow-xs">
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
           </svg>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Acceso No Autorizado</h2>
-        <p className="text-sm text-neutral-400 max-w-md mb-6">{error || 'El enlace que usaste es inválido o expiró.'}</p>
+        <h2 className="text-2xl font-bold mb-2 text-[#10233f]">Acceso No Autorizado</h2>
+        <p className="text-sm text-[#8d9aae] max-w-md mb-6">{error || 'El enlace que usaste es inválido o expiró.'}</p>
         <button
           onClick={handleLogout}
-          className="px-5 py-2.5 bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 text-neutral-200 rounded-xl text-sm transition-all"
+          className="px-5 py-2.5 bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#17233a] rounded-xl text-sm transition-all shadow-xs cursor-pointer font-semibold"
         >
           Volver al Login
         </button>
@@ -580,14 +580,14 @@ export default function OnboardingFlowPage() {
   }
 
   return (
-    <div className="flex flex-1 min-h-screen bg-[#061325] text-neutral-100 font-sans">
+    <div className="flex flex-1 min-h-screen bg-[#f7f8fb] text-[#17233a] font-sans">
       {notice && (
         <div
-          className={`fixed top-4 right-4 z-[60] w-full max-w-md rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-md ${notice.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-100'
+          className={`fixed top-4 right-4 z-[60] w-full max-w-md rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-md ${notice.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
               : notice.type === 'error'
-                ? 'bg-red-500/10 border-red-500/20 text-red-100'
-                : 'bg-blue-500/10 border-blue-500/20 text-blue-100'
+                ? 'bg-red-50 border-red-200 text-red-800'
+                : 'bg-blue-50 border-blue-200 text-blue-800'
             }`}
         >
           <div className="flex items-start justify-between gap-3">
@@ -601,24 +601,36 @@ export default function OnboardingFlowPage() {
 
       {/* 1. HEADER */}
       <div className="flex flex-col min-h-screen w-full">
-        <header className="flex items-center justify-between gap-4 border-b border-neutral-900 px-6 md:px-10 py-5">
+        <header className="flex items-center justify-between gap-4 border-b border-[#e7ebf1] px-6 md:px-10 py-4 bg-white shadow-xs">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse" />
-            <span className="text-xs uppercase tracking-widest text-neutral-500 font-semibold font-mono">{codigo}</span>
-            <span className="hidden md:inline text-neutral-700">•</span>
-            <span className="hidden md:inline text-sm text-neutral-400">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#caa344] animate-pulse" />
+            <span className="text-xs uppercase tracking-widest text-[#8d9aae] font-semibold font-mono">{codigo}</span>
+            <span className="hidden md:inline text-[#e7ebf1]">•</span>
+            <span className="hidden md:inline text-sm font-semibold text-[#10233f]">
               {titular?.nombres_apellidos || 'Inversionista'}
             </span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-xs text-neutral-500 hover:text-red-400 transition-colors p-2 rounded-lg"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            Salir
-          </button>
+          <div className="flex items-center gap-3">
+            {token === 'session' && (
+              <button
+                type="button"
+                onClick={() => router.push('/portal')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+              >
+                <span>← Ir a Mi Portal de Inversiones</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-xs font-semibold text-[#8d9aae] hover:text-red-500 transition-colors p-2 rounded-lg cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              Salir
+            </button>
+          </div>
         </header>
 
         {/* 2. PANTALLA PRINCIPAL */}
@@ -646,54 +658,54 @@ export default function OnboardingFlowPage() {
               </div>
             ) : etapa === 'completado_ficha' ? (
               <div className="text-center space-y-8 py-10 max-w-2xl mx-auto">
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-tr from-emerald-600/30 to-blue-600/30 border border-emerald-500/40 text-emerald-400 shadow-2xl shadow-emerald-950/50 animate-pulse">
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-600 shadow-xl shadow-emerald-500/10">
                   <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                 </div>
 
                 <div className="space-y-3">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full">
                     ✓ Ficha 100% Completada
                   </span>
-                  <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+                  <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#10233f]">
                     ¡Muchas gracias por tu tiempo!
                   </h2>
-                  <p className="text-base text-neutral-300 leading-relaxed max-w-xl mx-auto">
-                    Hemos recibido satisfactoriamente toda tu información. Tu asesor y equipo de operaciones de <strong className="text-white">Afinitive</strong> revisarán tu expediente para la emisión de tus formatos.
+                  <p className="text-base text-[#8d9aae] leading-relaxed max-w-xl mx-auto">
+                    Hemos recibido satisfactoriamente toda tu información. Tu asesor y equipo de operaciones de <strong className="text-[#10233f]">Afinitive</strong> revisarán tu expediente para la emisión de tus formatos.
                   </p>
                 </div>
 
-                <div className="backdrop-blur-md bg-[#08172e]/90 border border-[#162e52] rounded-3xl p-6 text-left shadow-2xl space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#162e52]/80 pb-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Resumen de Recepción</span>
-                    <span className="text-xs font-mono font-bold text-blue-400">{codigo}</span>
+                <div className="bg-white border border-[#e7ebf1] rounded-3xl p-6 text-left shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#e7ebf1] pb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#8d9aae]">Resumen de Recepción</span>
+                    <span className="text-xs font-mono font-bold text-[#caa344]">{codigo}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div>
-                      <span className="text-neutral-500 block">Titular:</span>
-                      <span className="font-semibold text-white text-sm">{titular?.nombres_apellidos || 'Inversionista'}</span>
+                      <span className="text-[#8d9aae] block">Titular:</span>
+                      <span className="font-semibold text-[#10233f] text-sm">{titular?.nombres_apellidos || 'Inversionista'}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-500 block">Documento de Identidad:</span>
-                      <span className="font-semibold text-white">{titular?.tipo_documento || 'DNI'}: {titular?.numero_documento || '---'}</span>
+                      <span className="text-[#8d9aae] block">Documento de Identidad:</span>
+                      <span className="font-semibold text-[#17233a]">{titular?.tipo_documento || 'DNI'}: {titular?.numero_documento || '---'}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-500 block">Correo Electrónico:</span>
-                      <span className="font-semibold text-white">{titular?.correo_electronico || '---'}</span>
+                      <span className="text-[#8d9aae] block">Correo Electrónico:</span>
+                      <span className="font-semibold text-[#17233a]">{titular?.correo_electronico || '---'}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-500 block">Siguiente Paso:</span>
-                      <span className="font-semibold text-emerald-400">Revisión de expediente y envío de firma</span>
+                      <span className="text-[#8d9aae] block">Siguiente Paso:</span>
+                      <span className="font-semibold text-emerald-600">Revisión de expediente y envío de firma</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Temporizador de Redirección Automática */}
-                <div className="backdrop-blur-sm bg-[#050f1f]/80 border border-[#162e50] rounded-2xl p-5 space-y-3">
+                <div className="bg-white border border-[#e7ebf1] rounded-2xl p-5 space-y-3 shadow-xs">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-400 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                    <span className="text-[#8d9aae] flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#caa344] animate-ping" />
                       {countdownPaused
                         ? 'Redirección en pausa'
                         : `Redirigiendo a la pantalla de inicio en ${countdown} segundo${countdown === 1 ? '' : 's'}...`}
@@ -701,14 +713,14 @@ export default function OnboardingFlowPage() {
                     <button
                       type="button"
                       onClick={() => setCountdownPaused(!countdownPaused)}
-                      className="text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2 cursor-pointer"
+                      className="text-[#caa344] hover:text-[#b8923a] font-semibold underline underline-offset-2 cursor-pointer"
                     >
                       {countdownPaused ? 'Reanudar contador' : 'Pausar'}
                     </button>
                   </div>
-                  <div className="w-full bg-[#0a1b33] h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#e7ebf1] h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-blue-500 to-emerald-400 h-full transition-all duration-1000 ease-linear"
+                      className="bg-[#caa344] h-full transition-all duration-1000 ease-linear"
                       style={{ width: `${(countdown / 30) * 100}%` }}
                     />
                   </div>
@@ -717,13 +729,13 @@ export default function OnboardingFlowPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-sm shadow-xl shadow-blue-900/30 transition-all cursor-pointer"
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white font-semibold text-sm shadow-xs transition-all cursor-pointer"
                   >
                     Salir de forma segura ahora
                   </button>
                   <button
                     onClick={() => setEtapa('perfil')}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[#162e52] hover:bg-[#0a1b33] text-neutral-400 hover:text-white font-medium text-sm transition-all cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[#e7ebf1] bg-white hover:bg-[#f7f8fb] text-[#17233a] font-medium text-sm transition-all cursor-pointer shadow-xs"
                   >
                     Revisar mi Ficha Madre
                   </button>
@@ -732,8 +744,8 @@ export default function OnboardingFlowPage() {
             ) : etapa === 'perfil' ? (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-neutral-100">Completa tu perfil de inversionista</h2>
-                  <p className="text-sm text-neutral-400 mt-2 leading-relaxed">
+                  <h2 className="text-2xl font-bold tracking-tight text-[#10233f]">Completa tu perfil de inversionista</h2>
+                  <p className="text-sm text-[#8d9aae] mt-2 leading-relaxed">
                     Llena los {7} pasos con tu información. Puedes guardar tu avance y continuar en cualquier momento.
                   </p>
                 </div>
@@ -749,34 +761,28 @@ export default function OnboardingFlowPage() {
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-neutral-100">Revisión y firma del paquete</h2>
-                    <p className="text-sm text-neutral-400 mt-2 leading-relaxed">
+                    <h2 className="text-2xl font-bold tracking-tight text-[#10233f]">Revisión y firma del paquete</h2>
+                    <p className="text-sm text-[#8d9aae] mt-2 leading-relaxed">
                       Este enlace incluye {documentosPaquete.length} documento{documentosPaquete.length === 1 ? '' : 's'} definidos por el analista para firmar en una sola acción.
                     </p>
                   </div>
-                  {/* <button
-                    onClick={() => setEtapa('perfil')}
-                    className="px-4 py-2 rounded-xl border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-900 transition-all text-xs font-semibold"
-                  >
-                    Editar perfil
-                  </button> */}
                 </div>
 
-                <div className="backdrop-blur-md bg-neutral-900/30 border border-neutral-900 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+                <div className="bg-white border border-[#e7ebf1] rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-neutral-100">Paquete de firma</h3>
-                      <p className="text-xs text-neutral-500 mt-1">
+                      <h3 className="text-sm font-semibold text-[#10233f]">Paquete de firma</h3>
+                      <p className="text-xs text-[#8d9aae] mt-1">
                         El analista definió este paquete para que puedas revisarlo y firmarlo de una sola vez.
                       </p>
                     </div>
-                    <span className="px-3 py-1 rounded-full border border-violet-500/20 bg-violet-500/10 text-violet-300 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full border border-[#caa344]/30 bg-[#caa344]/10 text-[#caa344] text-xs font-semibold">
                       {documentosFirmaCantidad} documentos
                     </span>
                   </div>
 
                   {documentosPaquete.length === 0 ? (
-                    <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 text-sm text-neutral-400">
+                    <div className="rounded-2xl border border-[#e7ebf1] bg-[#f7f8fb] p-6 text-sm text-[#8d9aae]">
                       Todavía no hay documentos listos para firmar en este paquete. Tu analista los generará en breve.
                     </div>
                   ) : (
@@ -787,16 +793,16 @@ export default function OnboardingFlowPage() {
                         return (
                           <div
                             key={doc.id}
-                            className="rounded-2xl border border-neutral-800 bg-neutral-950/35 p-4 flex items-start justify-between gap-4"
+                            className="rounded-2xl border border-[#e7ebf1] bg-[#f7f8fb] p-4 flex items-start justify-between gap-4"
                           >
                             <div className="space-y-1 min-w-0">
-                              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-semibold">
+                              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[#8d9aae] font-semibold">
                                 <span>{obtenerEtiquetaFormato(doc, index)}</span>
                               </div>
-                              <h4 className="text-sm font-semibold text-neutral-100 line-clamp-2">
+                              <h4 className="text-sm font-semibold text-[#10233f] line-clamp-2">
                                 {doc.nombreArchivo}
                               </h4>
-                              <p className="text-xs text-neutral-500 line-clamp-2">
+                              <p className="text-xs text-[#8d9aae] line-clamp-2">
                                 {doc.documentoPlantilla?.nombre}
                               </p>
                             </div>
@@ -804,7 +810,7 @@ export default function OnboardingFlowPage() {
                               <button
                                 type="button"
                                 onClick={() => handlePreviewDoc(doc)}
-                                className="p-2 rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 hover:border-neutral-700 transition-all"
+                                className="p-2 rounded-xl border border-[#e7ebf1] bg-white text-[#8d9aae] hover:text-[#10233f] hover:bg-[#f7f8fb] transition-all cursor-pointer shadow-xs"
                                 title="Previsualizar documento"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -814,8 +820,8 @@ export default function OnboardingFlowPage() {
                               </button>
                               <span
                                 className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${estaFirmado
-                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                    : 'bg-amber-50 border-amber-200 text-amber-700'
                                   }`}
                               >
                                 {estaFirmado ? 'Firmado' : 'Pendiente'}
@@ -827,23 +833,23 @@ export default function OnboardingFlowPage() {
                     </div>
                   )}
 
-                  <div className="rounded-2xl border border-neutral-800 bg-neutral-950/35 p-4 space-y-3">
+                  <div className="rounded-2xl border border-[#e7ebf1] bg-[#f7f8fb] p-4 space-y-3">
                     <div className="flex items-start gap-2">
                       <input
                         id="acepto-terminos-paquete"
                         type="checkbox"
                         checked={aceptoTerminosFirma}
                         onChange={(e) => setAceptoTerminosFirma(e.target.checked)}
-                        className="mt-1 w-4 h-4 rounded border-neutral-800 bg-neutral-900 text-violet-600 cursor-pointer accent-violet-600"
+                        className="mt-1 w-4 h-4 rounded border-[#e7ebf1] bg-white text-[#caa344] cursor-pointer accent-[#caa344]"
                         disabled={signing}
                       />
-                      <label htmlFor="acepto-terminos-paquete" className="text-xs text-neutral-400 cursor-pointer leading-relaxed">
+                      <label htmlFor="acepto-terminos-paquete" className="text-xs text-[#17233a] cursor-pointer leading-relaxed">
                         Declaro que he revisado la información mostrada y acepto firmar electrónicamente el paquete de documentos seleccionado.
                       </label>
                     </div>
 
                     {firmaError && (
-                      <p className="text-xs text-red-400 flex items-center gap-1">
+                      <p className="text-xs text-red-600 flex items-center gap-1">
                         <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
@@ -854,14 +860,14 @@ export default function OnboardingFlowPage() {
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={() => setEtapa('perfil')}
-                        className="px-5 py-3 rounded-xl border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-900 transition-all font-medium text-sm"
+                        className="px-5 py-3 rounded-xl border border-[#e7ebf1] bg-white text-[#17233a] hover:bg-[#f7f8fb] transition-all font-medium text-sm shadow-xs cursor-pointer"
                       >
                         Atrás
                       </button>
                       <button
                         onClick={abrirFirma}
                         disabled={!aceptoTerminosFirma || signing || documentosPaquete.length === 0}
-                        className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-sm hover:from-violet-500 hover:to-indigo-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-violet-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-5 py-3 rounded-xl bg-[#caa344] text-white font-semibold text-sm hover:bg-[#b8923a] transition-all flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {signing ? (
                           <>
@@ -886,17 +892,17 @@ export default function OnboardingFlowPage() {
 
       {/* MODAL DE PREVISUALIZACIÓN DE DOCUMENTO */}
       {previewDoc && (
-        <div className="fixed inset-0 z-[85] bg-neutral-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-5xl h-[92vh] bg-[#050e1b] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-            <div className="px-6 py-4 border-b border-[#162e50]/40 flex items-center justify-between bg-[#061325]">
+        <div className="fixed inset-0 z-[85] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-5xl h-[92vh] bg-white border border-[#e7ebf1] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="px-6 py-4 border-b border-[#e7ebf1] flex items-center justify-between bg-[#f7f8fb]">
               <div>
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500 font-mono">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-[#8d9aae] font-mono">
                   Previsualización de Documento
                 </span>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <h3 className="text-base font-bold text-white truncate max-w-lg">{previewDoc.nombreArchivo}</h3>
+                  <h3 className="text-base font-bold text-[#10233f] truncate max-w-lg">{previewDoc.nombreArchivo}</h3>
                   {previewDoc.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') && (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
                       PDF en Supabase
                     </span>
                   )}
@@ -908,7 +914,7 @@ export default function OnboardingFlowPage() {
                     href={previewDoc.rutaArchivo}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/40 hover:bg-violet-600/30 text-violet-300 text-xs font-semibold transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#caa344]/10 border border-[#caa344]/30 hover:bg-[#caa344]/20 text-[#caa344] text-xs font-semibold transition-all cursor-pointer shadow-xs"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -918,7 +924,7 @@ export default function OnboardingFlowPage() {
                 )}
                 <button
                   onClick={() => setPreviewDoc(null)}
-                  className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-all cursor-pointer"
+                  className="p-2 rounded-xl bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#8d9aae] hover:text-[#10233f] transition-all cursor-pointer shadow-xs"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -927,14 +933,14 @@ export default function OnboardingFlowPage() {
               </div>
             </div>
 
-            <div className="flex-1 min-h-0 relative bg-[#e2e8f0] overflow-hidden flex flex-col items-center justify-center">
+            <div className="flex-1 min-h-0 relative bg-[#f7f8fb] overflow-hidden flex flex-col items-center justify-center">
               {loadingPreview ? (
-                <div className="flex flex-col items-center justify-center text-neutral-400 p-8 bg-[#050e1b] w-full h-full">
-                  <svg className="animate-spin h-8 w-8 text-violet-500 mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <div className="flex flex-col items-center justify-center text-[#8d9aae] p-8 bg-white w-full h-full">
+                  <svg className="animate-spin h-8 w-8 text-[#caa344] mb-4" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <p className="text-xs text-neutral-300">Cargando el documento...</p>
+                  <p className="text-xs text-[#8d9aae]">Cargando el documento...</p>
                 </div>
               ) : previewDoc?.rutaArchivo && previewDoc.rutaArchivo.startsWith('http') ? (
                 <iframe
@@ -946,16 +952,16 @@ export default function OnboardingFlowPage() {
                 <iframe
                   srcDoc={previewHtml}
                   title="Doc Preview"
-                  className="w-full h-full border-0 bg-[#e2e8f0]"
+                  className="w-full h-full border-0 bg-white"
                   sandbox="allow-same-origin"
                 />
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-[#162e50]/40 flex justify-end gap-3 bg-[#061325]">
+            <div className="px-6 py-4 border-t border-[#e7ebf1] flex justify-end gap-3 bg-[#f7f8fb]">
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="px-5 py-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-neutral-300 font-bold text-xs uppercase tracking-wide transition-all"
+                className="px-5 py-2 rounded-xl bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#17233a] font-bold text-xs uppercase tracking-wide transition-all shadow-xs cursor-pointer"
               >
                 Cerrar Previsualización
               </button>

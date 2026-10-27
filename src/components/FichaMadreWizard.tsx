@@ -53,7 +53,8 @@ export function FichaMadreWizard({
   onSaved,
   onComplete,
 }: FichaMadreWizardProps) {
-  const [step, setStep] = useState(0);
+  // Todos los steps empiezan cerrados (null) y el usuario elige cuál abrir
+  const [step, setStep] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export function FichaMadreWizard({
 
   const { global, pasos } = progressData;
 
-  // Envío final de todo el JSON en el último paso
+  // Envío final o guardado manual de avance
   async function enviarFinal(): Promise<boolean> {
     if (readOnly) return true;
     try {
@@ -121,30 +122,20 @@ export function FichaMadreWizard({
     }
   }
 
-  async function irAPaso(targetStep: number) {
-    if (readOnly) {
-      setStep(targetStep);
-      return;
-    }
-    // Si intenta avanzar a un paso posterior, validar el paso actual primero
-    if (targetStep > step) {
-      const camposDelPaso = STEP_TRIGGER_FIELDS[step] ?? [];
-      if (camposDelPaso.length > 0) {
-        const esValido = await form.trigger(camposDelPaso as any, { shouldFocus: true });
-        if (!esValido) {
-          setErrorMsg('Por favor completa los campos obligatorios del paso actual antes de avanzar.');
-          return;
-        }
-      }
-    }
+  // Alternar apertura/cierre de cualquier paso al hacer clic en su encabezado
+  function irAPaso(targetStep: number) {
     setErrorMsg(null);
-    setStep(targetStep);
+    setStep((prev) => (prev === targetStep ? null : targetStep));
   }
 
   async function siguiente() {
+    if (step === null) return;
+
     if (readOnly) {
       if (step < STEPS.length - 1) {
-        setStep((s) => s + 1);
+        setStep((s) => (s !== null ? s + 1 : 0));
+      } else {
+        setStep(null);
       }
       return;
     }
@@ -160,6 +151,16 @@ export function FichaMadreWizard({
     }
     setErrorMsg(null);
 
+    // Guardar avance en segundo plano sin interrumpir la navegación
+    const freshPayload = formValuesToPayload(form.getValues());
+    api.guardarInversionista(fichaMadreId, freshPayload)
+      .then((res) => {
+        setSavedAt(new Date());
+        updateProgress();
+        onSaved?.(res);
+      })
+      .catch(() => {});
+
     // Último paso: enviar todo el JSON acumulado de una sola vez al backend
     if (step === STEPS.length - 1) {
       const saved = await enviarFinal();
@@ -168,38 +169,41 @@ export function FichaMadreWizard({
     }
 
     // Pasos intermedios: avanzar inmediatamente al siguiente paso
-    setStep((s) => s + 1);
+    setStep((s) => (s !== null ? s + 1 : 0));
   }
 
   function atras() {
     setErrorMsg(null);
-    if (step === 0) return;
-    setStep((s) => s - 1);
+    if (step === null || step === 0) {
+      setStep(null);
+      return;
+    }
+    setStep((s) => (s !== null && s > 0 ? s - 1 : null));
   }
 
-  const esUltimo = step === STEPS.length - 1;
+  const esUltimo = step !== null && step === STEPS.length - 1;
   const PasoLabel = readOnly
     ? esUltimo
       ? 'Fin del Formulario'
       : 'Ver Siguiente Paso'
     : esUltimo
       ? 'Guardar todo y finalizar'
-      : 'Continuar';
+      : 'Continuar y Siguiente Paso';
 
   return (
     <FormProvider {...form}>
       <div className="flex flex-col gap-5 w-full">
         {/* Banner de Modo Solo Lectura si está aprobado */}
         {readOnly && (
-          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4.5 shadow-lg flex items-center gap-3.5 text-emerald-200">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4.5 shadow-xs flex items-center gap-3.5 text-emerald-800">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
               <Check className="size-5 stroke-[2.5]" />
             </div>
             <div className="min-w-0">
-              <h4 className="text-xs font-bold text-emerald-300 uppercase tracking-wide">
+              <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
                 Expediente Aprobado • Modo Solo Lectura
               </h4>
-              <p className="text-xs text-emerald-200/80 leading-relaxed mt-0.5">
+              <p className="text-xs text-emerald-700 leading-relaxed mt-0.5">
                 Este expediente ya cuenta con aprobación fiduciaria. Los campos se encuentran bloqueados para edición y están habilitados únicamente para su visualización y consulta.
               </p>
             </div>
@@ -207,30 +211,39 @@ export function FichaMadreWizard({
         )}
 
         {/* Banner de Progreso General */}
-        <div className="rounded-2xl border border-[#162e50] bg-gradient-to-r from-[#08172e] via-[#0a1d3b] to-[#08172e] p-4.5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div className="rounded-2xl border border-[#e7ebf1] bg-white p-4.5 shadow-xs flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 font-extrabold text-sm shadow-inner shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#caa344]/15 border border-[#caa344]/30 text-[#caa344] font-extrabold text-sm shadow-xs shrink-0">
               {global.pct}%
             </div>
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400 font-mono">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#caa344] font-mono">
                 Estado Ficha Madre
               </span>
-              <h2 className="text-base font-extrabold text-white tracking-tight">
+              <h2 className="text-base font-extrabold text-[#10233f] tracking-tight">
                 {global.pct === 100 ? 'Ficha completada al 100%' : `Progreso total: ${global.pct}%`}
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {step !== null && (
+              <button
+                type="button"
+                onClick={() => setStep(null)}
+                className="px-3 py-1 rounded-xl border border-[#e7ebf1] bg-white hover:bg-[#f7f8fb] text-[#8d9aae] hover:text-[#17233a] text-xs font-semibold transition-all cursor-pointer shadow-xs"
+              >
+                Cerrar pasos
+              </button>
+            )}
             {savedAt && (
-              <span className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-                <Check className="size-3.5 text-emerald-400" />
+              <span className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                <Check className="size-3.5 text-emerald-700" />
                 Guardado a las {savedAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
             <div className="w-36 sm:w-48">
-              <Progress value={global.pct} className="h-2.5 bg-[#0c1f3d]" />
+              <Progress value={global.pct} className="h-2.5 bg-[#e7ebf1]" />
             </div>
           </div>
         </div>
@@ -247,10 +260,10 @@ export function FichaMadreWizard({
               <div
                 key={s.id}
                 className={cn(
-                  'rounded-2xl border transition-all duration-300 ease-in-out overflow-hidden shadow-lg',
+                  'rounded-2xl border transition-all duration-300 ease-in-out overflow-hidden shadow-xs',
                   activo
-                    ? 'border-blue-500/60 bg-[#08172e] ring-1 ring-blue-500/30 shadow-2xl shadow-blue-950/30'
-                    : 'border-[#162e50]/70 bg-[#061427]/80 hover:border-[#1e3c68]',
+                    ? 'border-[#caa344] bg-white ring-1 ring-[#caa344]/30 shadow-sm'
+                    : 'border-[#e7ebf1] bg-white hover:border-[#caa344]/40',
                 )}
               >
                 {/* Encabezado del Acordeón (Clickable) */}
@@ -262,12 +275,12 @@ export function FichaMadreWizard({
                   <div className="flex items-center gap-3.5 min-w-0">
                     <span
                       className={cn(
-                        'flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-all duration-300 shadow-sm',
+                        'flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-all duration-300 shadow-xs',
                         completo
-                          ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                          ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                           : activo
-                            ? 'bg-blue-600 text-white shadow-blue-500/30 scale-105'
-                            : 'bg-[#0f2343] text-neutral-400 border border-[#1b355a]',
+                            ? 'bg-[#caa344] text-white shadow-[#caa344]/30 scale-105'
+                            : 'bg-[#f7f8fb] text-[#8d9aae] border border-[#e7ebf1]',
                       )}
                     >
                       {completo ? <Check className="size-4 stroke-[3]" /> : i + 1}
@@ -276,12 +289,12 @@ export function FichaMadreWizard({
                       <h3
                         className={cn(
                           'text-sm font-bold tracking-tight truncate transition-colors duration-200',
-                          activo ? 'text-white font-extrabold' : 'text-neutral-200',
+                          activo ? 'text-[#10233f] font-extrabold' : 'text-[#17233a]',
                         )}
                       >
                         {s.title}
                       </h3>
-                      <p className="text-xs text-neutral-400 truncate mt-0.5">{s.description}</p>
+                      <p className="text-xs text-[#8d9aae] truncate mt-0.5">{s.description}</p>
                     </div>
                   </div>
 
@@ -291,10 +304,10 @@ export function FichaMadreWizard({
                       className={cn(
                         'px-2.5 py-1 rounded-lg text-xs font-extrabold border font-mono transition-colors duration-200',
                         completo
-                          ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                           : pct > 0
-                            ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
-                            : 'bg-neutral-800/60 border-neutral-700/50 text-neutral-400',
+                            ? 'bg-amber-50 border-amber-200 text-amber-700'
+                            : 'bg-[#f7f8fb] border-[#e7ebf1] text-[#8d9aae]',
                       )}
                     >
                       {pct}%
@@ -304,7 +317,7 @@ export function FichaMadreWizard({
                     <div
                       className={cn(
                         'p-1.5 rounded-lg transition-transform duration-300 ease-in-out',
-                        activo ? 'bg-blue-500/20 text-blue-400 rotate-180' : 'text-neutral-500',
+                        activo ? 'bg-[#caa344]/10 text-[#caa344] rotate-180' : 'text-[#8d9aae]',
                       )}
                     >
                       <ChevronDown className="size-4" />
@@ -320,54 +333,74 @@ export function FichaMadreWizard({
                   )}
                 >
                   <div className="overflow-hidden">
-                    <div className="border-t border-[#162e50]/80 p-5 md:p-6 bg-[#08172e]/60 space-y-6">
+                    <div className="border-t border-[#e7ebf1] p-5 md:p-6 bg-[#f7f8fb]/40 space-y-6">
                       <fieldset disabled={readOnly} className={cn("space-y-6", readOnly && "opacity-95 cursor-default")}>
                         <StepComp />
                       </fieldset>
 
                       {errorMsg && (
-                        <p className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-xs font-medium text-rose-300">
+                        <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
                           {errorMsg}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between gap-3 border-t border-[#162e50]/80 pt-5">
+                      <div className="flex items-center justify-between gap-3 border-t border-[#e7ebf1] pt-5">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={atras}
-                          disabled={step === 0 || saving}
-                          className={cn(
-                            'bg-[#09172c] border border-[#1b355a] hover:bg-[#112442] hover:text-white text-neutral-300 rounded-xl px-5 py-2.5 font-semibold text-xs transition-all cursor-pointer',
-                            step === 0 && 'invisible',
-                          )}
+                          disabled={saving}
+                          className="bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] hover:text-[#17233a] text-[#17233a] rounded-xl px-5 py-2.5 font-semibold text-xs transition-all cursor-pointer shadow-xs"
                         >
-                          <ArrowLeft className="size-4 mr-1.5" /> Atrás
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={siguiente}
-                          disabled={saving || (readOnly && esUltimo)}
-                          className={cn(
-                            "rounded-xl px-6 py-2.5 font-bold text-xs transition-all shadow-lg",
-                            readOnly && esUltimo
-                              ? "bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 cursor-default"
-                              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/30 shadow-blue-600/30 cursor-pointer"
-                          )}
-                        >
-                          {saving ? (
-                            'Guardando...'
+                          {step === 0 ? (
+                            'Cerrar paso'
                           ) : (
                             <>
-                              {PasoLabel}
-                              {esUltimo ? (
-                                readOnly ? <Check className="size-4 ml-1.5" /> : <Save className="size-4 ml-1.5" />
-                              ) : (
-                                <ArrowRight className="size-4 ml-1.5" />
-                              )}
+                              <ArrowLeft className="size-4 mr-1.5" /> Anterior
                             </>
                           )}
                         </Button>
+
+                        <div className="flex items-center gap-2.5">
+                          {!readOnly && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={enviarFinal}
+                              disabled={saving}
+                              className="bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#17233a] hover:text-[#caa344] hover:border-[#caa344] rounded-xl px-4 py-2.5 font-semibold text-xs transition-all shadow-xs cursor-pointer"
+                              title="Guardar el avance actual"
+                            >
+                              <Save className="size-4 mr-1.5 text-[#caa344]" />
+                              <span>{saving ? 'Guardando...' : 'Guardar Avance'}</span>
+                            </Button>
+                          )}
+
+                          <Button
+                            type="button"
+                            onClick={siguiente}
+                            disabled={saving || (readOnly && esUltimo)}
+                            className={cn(
+                              "rounded-xl px-6 py-2.5 font-bold text-xs transition-all shadow-xs",
+                              readOnly && esUltimo
+                                ? "bg-emerald-50 border border-emerald-200 text-emerald-700 cursor-default"
+                                : "bg-[#caa344] hover:bg-[#b8923a] text-white shadow-sm cursor-pointer"
+                            )}
+                          >
+                            {saving ? (
+                              'Guardando...'
+                            ) : (
+                              <>
+                                {PasoLabel}
+                                {esUltimo ? (
+                                  readOnly ? <Check className="size-4 ml-1.5" /> : <Save className="size-4 ml-1.5" />
+                                ) : (
+                                  <ArrowRight className="size-4 ml-1.5" />
+                                )}
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

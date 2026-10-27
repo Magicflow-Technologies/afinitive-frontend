@@ -46,10 +46,143 @@ export interface DocumentoPlantilla {
   activo?: boolean;
 }
 
+export interface Fideicomiso {
+  id: string;
+  nombre: string;
+  fideicomitente?: string;
+  emisorFiduciario?: string;
+  patrimonioNombreLargo?: string;
+  denominacionValores?: string;
+  tipoValor?: string;
+  monedaDefault?: string;
+  tasaInteresDefault?: string;
+  plazoEmisionDefault?: string;
+  notario?: string;
+  ruc?: string;
+  titularCuenta?: string;
+  bancoNombre?: string;
+  numeroCuenta?: string;
+  cuentaCci?: string;
+  direccionFiduciario?: string;
+  representanteLegal?: string;
+  correoOpCorilDefault?: string;
+  correoOpCorfidDefault?: string;
+  activo?: boolean;
+  _count?: { inversiones: number };
+}
+
+export interface InversionFideicomiso {
+  id: string;
+  fichaMadreId: string;
+  fideicomisoId: string;
+  moneda: string;
+  monto: string;
+  montoLetras?: string;
+  tasaInteres?: string;
+  plazoEmision?: string;
+  serieEmision?: string;
+  cantidadValores?: string;
+  vigenciaInstruccion?: string;
+  bancoDestino?: string;
+  numeroCuentaDestino?: string;
+  cuentaCciDestino?: string;
+  titularCuentaDestino?: string;
+  vencimiento?: string;
+  correoOpCoril?: string;
+  correoOpCorfid?: string;
+  enlaceCronograma?: string;
+  estado?: 'PENDIENTE' | 'EN_PROCESO' | 'FIRMADO' | 'CANCELADO';
+  observaciones?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  fideicomiso?: Fideicomiso;
+  documentos?: DocumentoGeneral[];
+}
+
+export interface InversionPortalItem {
+  id: string;
+  fideicomisoId: string;
+  fideicomisoNombre: string;
+  patrimonioNombreLargo?: string;
+  emisorFiduciario?: string;
+  moneda: string;
+  monto: number;
+  montoLetras?: string;
+  tasaInteres: string;
+  plazoEmision: string;
+  vencimiento: string;
+  correoOpCoril: string;
+  correoOpCorfid: string;
+  enlaceCronograma: string;
+  bancoDestino?: string;
+  numeroCuentaDestino?: string;
+  cuentaCciDestino?: string;
+  titularCuentaDestino?: string;
+  estado: string;
+  documentos: Array<{
+    id: string;
+    nombreArchivo: string;
+    estado: string;
+    rutaArchivo: string;
+    esFirmado: boolean;
+  }>;
+  createdAt: string;
+}
+
+export interface PortalInversionistaData {
+  cliente: {
+    id: string;
+    nombres: string;
+    apellidos: string;
+    numeroDocumento: string;
+    tipoDocumento: string;
+    correo: string;
+    telefono?: string;
+  };
+  fichaMadreId: string | null;
+  codigoExpediente: string | null;
+  estadoExpediente: string;
+  totalInvertidoUSD: number;
+  totalInvertidoPEN: number;
+  totalInversiones: number;
+  tasaPromedio: string;
+  inversiones: InversionPortalItem[];
+  documentosGenerales: Array<{
+    id: string;
+    nombreArchivo: string;
+    estado: string;
+    rutaArchivo: string;
+    inversionFideicomisoId?: string;
+    esFirmado: boolean;
+  }>;
+}
+
+export interface ResultadoImportacionInversiones {
+  totalFilas: number;
+  totalExitosos: number;
+  totalErrores: number;
+  exitosos: Array<{
+    fila: number;
+    inversionista: string;
+    fideicomiso: string;
+    monto: number;
+    moneda: string;
+    tasa: string;
+    vencimiento: string;
+    accion: 'CREADO' | 'ACTUALIZADO';
+  }>;
+  errores: Array<{
+    fila: number;
+    inversionista: string;
+    motivo: string;
+  }>;
+}
+
 export interface DocumentoGeneral {
   id: string;
   fichaMadreId: string;
   documentoPlantillaId: string;
+  inversionFideicomisoId?: string;
   nombreArchivo: string;
   rutaArchivo: string;
   estado: 'PENDIENTE' | 'GENERADO' | 'PENDIENTE_FIRMA' | 'PARCIAL_FIRMADO' | 'FIRMADO' | 'ANULADO';
@@ -60,6 +193,7 @@ export interface DocumentoGeneral {
     archivo?: string;
   };
   firmas: Firma[];
+  inversionFideicomiso?: InversionFideicomiso;
 }
 
 export interface FichaMadre {
@@ -533,6 +667,8 @@ export const api = {
     file: File,
     nombreArchivo?: string,
     documentoPlantillaId?: string,
+    documentoGeneralId?: string,
+    inversionFideicomisoId?: string,
   ): Promise<DocumentoGeneral> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -541,6 +677,12 @@ export const api = {
     }
     if (documentoPlantillaId) {
       formData.append('documentoPlantillaId', documentoPlantillaId);
+    }
+    if (documentoGeneralId) {
+      formData.append('documentoGeneralId', documentoGeneralId);
+    }
+    if (inversionFideicomisoId) {
+      formData.append('inversionFideicomisoId', inversionFideicomisoId);
     }
 
     const response = await fetch(`${API_BASE_URL}/documentos-generales/upload-masivo/${fichaMadreId}`, {
@@ -553,6 +695,123 @@ export const api = {
       throw new Error(errorData.message || `Error al subir documento: ${response.status}`);
     }
 
+    return response.json();
+  },
+
+  // --- Módulo Fideicomisos e Inversiones ---
+  obtenerFideicomisosCatalogo: (): Promise<Fideicomiso[]> => {
+    return fetchAPI<Fideicomiso[]>('/fideicomisos');
+  },
+
+  crearFideicomiso: (payload: Partial<Fideicomiso>): Promise<Fideicomiso> => {
+    return fetchAPI<Fideicomiso>('/fideicomisos', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  actualizarFideicomiso: (id: string, payload: Partial<Fideicomiso>): Promise<Fideicomiso> => {
+    return fetchAPI<Fideicomiso>(`/fideicomisos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  eliminarFideicomiso: (id: string): Promise<{ success: boolean }> => {
+    return fetchAPI<{ success: boolean }>(`/fideicomisos/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  obtenerInversionesFideicomiso: (fichaMadreId: string): Promise<InversionFideicomiso[]> => {
+    return fetchAPI<InversionFideicomiso[]>(`/fideicomisos/expediente/${fichaMadreId}`);
+  },
+
+  asociarInversionFideicomiso: (payload: {
+    fichaMadreId: string;
+    fideicomisoId: string;
+    monto: string;
+    moneda?: string;
+    montoLetras?: string;
+    tasaInteres?: string;
+    plazoEmision?: string;
+    serieEmision?: string;
+    cantidadValores?: string;
+    vigenciaInstruccion?: string;
+    bancoDestino?: string;
+    numeroCuentaDestino?: string;
+    cuentaCciDestino?: string;
+    titularCuentaDestino?: string;
+    vencimiento?: string;
+    correoOpCoril?: string;
+    correoOpCorfid?: string;
+    enlaceCronograma?: string;
+    observaciones?: string;
+  }): Promise<InversionFideicomiso> => {
+    return fetchAPI<InversionFideicomiso>('/fideicomisos/inversion', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  actualizarInversionFideicomiso: (
+    id: string,
+    payload: Partial<{
+      monto: string;
+      moneda: string;
+      montoLetras: string;
+      tasaInteres: string;
+      plazoEmision: string;
+      serieEmision: string;
+      cantidadValores: string;
+      vigenciaInstruccion: string;
+      bancoDestino: string;
+      numeroCuentaDestino: string;
+      cuentaCciDestino: string;
+      titularCuentaDestino: string;
+      vencimiento: string;
+      correoOpCoril: string;
+      correoOpCorfid: string;
+      enlaceCronograma: string;
+      observaciones: string;
+    }>,
+  ): Promise<InversionFideicomiso> => {
+    return fetchAPI<InversionFideicomiso>(`/fideicomisos/inversion/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  eliminarInversionFideicomiso: (id: string): Promise<{ success: boolean }> => {
+    return fetchAPI<{ success: boolean }>(`/fideicomisos/inversion/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  descargarPdfPackFideicomiso: async (inversionId: string) => {
+    const response = await fetch(`${API_BASE_URL}/fideicomisos/inversion/${inversionId}/pdf-pack`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error al descargar pack consolidado: ${response.status}`);
+    }
+    return response.blob();
+  },
+
+  obtenerPortalInversionista: (clienteId: string): Promise<PortalInversionistaData> => {
+    return fetchAPI<PortalInversionistaData>(`/fideicomisos/portal/${clienteId}`);
+  },
+
+  importarInversionesFideicomisoMasivo: async (file: File): Promise<ResultadoImportacionInversiones> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/fideicomisos/importar-masivo`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Error al importar archivo de inversiones en fideicomisos');
+    }
     return response.json();
   },
 };

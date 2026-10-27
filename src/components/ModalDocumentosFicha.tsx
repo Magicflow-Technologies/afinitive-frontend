@@ -244,38 +244,38 @@ export function ModalDocumentosFicha({
 
   const getStatusBadge = (estado: FichaMadre['estado']) => {
     const badges = {
-      PENDIENTE: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
-      EN_PROCESO: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
-      EN_REVISION: 'bg-orange-500/10 border-orange-500/30 text-orange-400',
-      COMPLETADA: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-      APROBADA: 'bg-green-500/15 border-green-500/40 text-green-400 font-bold',
-      RECHAZADA: 'bg-red-500/10 border-red-500/30 text-red-400',
+      PENDIENTE: 'bg-amber-50 border-amber-200 text-amber-700',
+      EN_PROCESO: 'bg-blue-50 border-blue-200 text-blue-700',
+      EN_REVISION: 'bg-orange-50 border-orange-200 text-orange-700',
+      COMPLETADA: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+      APROBADA: 'bg-emerald-100 border-emerald-300 text-emerald-800 font-bold',
+      RECHAZADA: 'bg-red-50 border-red-200 text-red-700',
     };
-    return badges[estado] || 'bg-neutral-800 border-neutral-700 text-neutral-400';
+    return badges[estado] || 'bg-[#f7f8fb] border-[#e7ebf1] text-[#8d9aae]';
   };
 
   return (
-    <div className="fixed inset-0 bg-neutral-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-4xl bg-[#061325] border border-[#162e50] rounded-3xl overflow-hidden shadow-2xl flex flex-col my-6 max-h-[92vh]">
+    <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full max-w-4xl bg-white border border-[#e7ebf1] rounded-3xl overflow-hidden shadow-2xl flex flex-col my-6 max-h-[92vh]">
         
         {/* CABECERA DEL MODAL */}
-        <div className="px-6 py-4 border-b border-[#162e50]/40 flex items-center justify-between bg-[#0a1c36]/40 shrink-0">
+        <div className="px-6 py-4 border-b border-[#e7ebf1] flex items-center justify-between bg-[#f7f8fb] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600/30 to-violet-600/30 border border-blue-500/40 flex items-center justify-center text-blue-400">
+            <div className="w-10 h-10 rounded-2xl bg-[#caa344]/15 border border-[#caa344]/30 flex items-center justify-center text-[#caa344]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white tracking-tight">
+                <h2 className="text-base font-bold text-[#10233f] tracking-tight">
                   Expediente de Documentos
                 </h2>
-                <span className="text-[11px] font-mono font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-mono font-bold text-[#caa344] bg-[#caa344]/10 border border-[#caa344]/30 px-2 py-0.5 rounded-md">
                   {ficha.codigo}
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-[#8d9aae]">
                 Digitalización de los 7 formatos oficiales en Supabase Storage para este cliente.
               </p>
             </div>
@@ -283,7 +283,7 @@ export function ModalDocumentosFicha({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-[#050e1b] border border-[#162e50] hover:bg-[#0a1c36] text-neutral-400 hover:text-white transition-all cursor-pointer"
+            className="p-2 rounded-xl bg-white border border-[#e7ebf1] hover:bg-[#f7f8fb] text-[#8d9aae] hover:text-[#17233a] transition-all cursor-pointer shadow-xs"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -292,19 +292,19 @@ export function ModalDocumentosFicha({
         </div>
 
         {/* CONTENIDO PRINCIPAL */}
-        <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1">
+        <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1 bg-white">
           
           {/* Tarjeta resumen del cliente */}
-          <div className="p-4 rounded-2xl bg-[#0a1c36]/40 border border-[#162e50] flex items-center justify-between gap-4 flex-wrap">
+          <div className="p-4 rounded-2xl bg-[#f7f8fb] border border-[#e7ebf1] flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <span className="text-xs font-mono text-neutral-400">
-                {ficha.cliente.persona.tipoDocumento}: <strong className="text-neutral-200">{ficha.cliente.persona.numeroDocumento}</strong>
+              <span className="text-xs font-mono text-[#8d9aae]">
+                {ficha.cliente.persona.tipoDocumento}: <strong className="text-[#10233f]">{ficha.cliente.persona.numeroDocumento}</strong>
               </span>
-              <h3 className="text-base font-bold text-white mt-0.5">
+              <h3 className="text-base font-bold text-[#10233f] mt-0.5">
                 {ficha.cliente.persona.nombres} {ficha.cliente.persona.apellidos}
               </h3>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                Asesor: <span className="text-neutral-300 font-medium">{ficha.empleado.persona.nombres} {ficha.empleado.persona.apellidos}</span>
+              <p className="text-xs text-[#8d9aae] mt-0.5">
+                Asesor: <span className="text-[#17233a] font-medium">{ficha.empleado.persona.nombres} {ficha.empleado.persona.apellidos}</span>
               </p>
             </div>
 
@@ -314,10 +314,10 @@ export function ModalDocumentosFicha({
               </span>
               <div className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 ${
                 totalSubidos === 7
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                   : totalSubidos > 0
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                  : 'bg-neutral-800/50 border-neutral-700 text-neutral-400'
+                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  : 'bg-[#f7f8fb] border-[#e7ebf1] text-[#8d9aae]'
               }`}>
                 <span>{totalSubidos === 7 ? '✓ 7/7 Completo' : `${totalSubidos}/7 Digitalizados`}</span>
               </div>
@@ -327,12 +327,12 @@ export function ModalDocumentosFicha({
           {/* Barra de progreso visual */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-neutral-400">Progreso del expediente ({totalSubidos} de 7)</span>
-              <span className="text-blue-400 font-bold">{porcentaje}%</span>
+              <span className="text-[#8d9aae]">Progreso del expediente ({totalSubidos} de 7)</span>
+              <span className="text-[#caa344] font-bold">{porcentaje}%</span>
             </div>
-            <div className="h-2 rounded-full bg-[#050e1b] border border-[#162e50] overflow-hidden">
+            <div className="h-2 rounded-full bg-[#e7ebf1] overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-300"
+                className="h-full bg-[#caa344] transition-all duration-300"
                 style={{ width: `${porcentaje}%` }}
               />
             </div>
@@ -342,11 +342,11 @@ export function ModalDocumentosFicha({
           {feedback && (
             <div className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
               feedback.tipo === 'success'
-                ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-300'
-                : 'bg-red-950/20 border-red-800/40 text-red-300'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                : 'bg-red-50 border-red-200 text-red-700'
             }`}>
               <span>{feedback.texto}</span>
-              <button onClick={() => setFeedback(null)} className="text-neutral-400 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setFeedback(null)} className="text-[#8d9aae] hover:text-[#17233a] cursor-pointer">✕</button>
             </div>
           )}
 
@@ -362,8 +362,8 @@ export function ModalDocumentosFicha({
             }}
             className={`p-4 rounded-2xl border-2 border-dashed transition-all text-center flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
               isDraggingBatch
-                ? 'border-blue-400 bg-blue-500/15'
-                : 'border-[#162e50] hover:border-blue-500/40 bg-[#050e1b]/40'
+                ? 'border-[#caa344] bg-[#caa344]/10'
+                : 'border-[#e7ebf1] hover:border-[#caa344]/40 bg-[#f7f8fb]'
             }`}
           >
             <input
@@ -374,18 +374,18 @@ export function ModalDocumentosFicha({
               onChange={(e) => e.target.files?.length && handleBatchFiles(e.target.files)}
               className="hidden"
             />
-            <div className="flex items-center gap-2 text-xs text-neutral-300 font-semibold">
-              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 text-xs text-[#17233a] font-semibold">
+              <svg className="w-4 h-4 text-[#caa344]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
               <span>Haz clic o arrastra aquí varios PDFs para detección automática</span>
             </div>
-            <p className="text-[11px] text-neutral-500">
+            <p className="text-[11px] text-[#8d9aae]">
               El sistema identificará por el nombre del archivo a cuál de los 7 casilleros corresponde (ej. ficha, beneficiario, etc.).
             </p>
             {batchUploading && (
-              <div className="flex items-center gap-2 text-xs text-blue-400 mt-1 font-semibold animate-pulse">
-                <svg className="animate-spin h-3.5 w-3.5 text-blue-400" fill="none" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 text-xs text-[#caa344] mt-1 font-semibold animate-pulse">
+                <svg className="animate-spin h-3.5 w-3.5 text-[#caa344]" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
@@ -397,17 +397,17 @@ export function ModalDocumentosFicha({
           {/* GRID DE LOS 7 CASILLEROS */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#10233f] uppercase tracking-wider">
                 Casilleros Oficiales del Expediente
               </span>
-              <span className="text-[11px] text-neutral-500">
+              <span className="text-[11px] text-[#8d9aae]">
                 Puedes subir los que tengas disponibles, así sea uno solo
               </span>
             </div>
 
             {loading ? (
-              <div className="py-12 text-center text-neutral-400 text-xs flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24">
+              <div className="py-12 text-center text-[#8d9aae] text-xs flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-[#caa344]" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
@@ -423,32 +423,32 @@ export function ModalDocumentosFicha({
                       key={slot.idOrder}
                       className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
                         documento
-                          ? 'bg-emerald-950/15 border-emerald-500/30'
-                          : 'bg-[#050e1b]/60 border-[#162e50] hover:border-neutral-600'
+                          ? 'bg-emerald-50/40 border-emerald-200'
+                          : 'bg-white border-[#e7ebf1] hover:border-[#caa344]/40'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-white truncate">{slot.nombre}</h4>
-                          <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">{slot.subtitulo}</p>
+                          <h4 className="text-xs font-bold text-[#10233f] truncate">{slot.nombre}</h4>
+                          <p className="text-[11px] text-[#8d9aae] line-clamp-1 mt-0.5">{slot.subtitulo}</p>
                         </div>
 
                         {documento ? (
-                          <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-bold text-emerald-400">
+                          <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-200 text-[10px] font-bold text-emerald-800">
                             ✓ Subido
                           </span>
                         ) : (
-                          <span className="shrink-0 px-2 py-0.5 rounded-md bg-neutral-800 border border-neutral-700 text-[10px] text-neutral-400 font-medium">
+                          <span className="shrink-0 px-2 py-0.5 rounded-md bg-[#f7f8fb] border border-[#e7ebf1] text-[10px] text-[#8d9aae] font-medium">
                             Pendiente
                           </span>
                         )}
                       </div>
 
                       {/* Acción del casillero */}
-                      <div className="pt-2 border-t border-[#162e50]/40 flex items-center justify-between gap-2 text-xs">
+                      <div className="pt-2 border-t border-[#e7ebf1] flex items-center justify-between gap-2 text-xs">
                         {documento ? (
                           <>
-                            <span className="text-[11px] text-neutral-300 truncate max-w-[170px]" title={documento.nombreArchivo}>
+                            <span className="text-[11px] text-[#17233a] truncate max-w-[170px]" title={documento.nombreArchivo}>
                               📄 {documento.nombreArchivo}
                             </span>
                             <div className="flex items-center gap-2 shrink-0">
@@ -456,11 +456,11 @@ export function ModalDocumentosFicha({
                                 href={documento.rutaArchivo}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline"
+                                className="text-[11px] text-[#caa344] hover:text-[#b8923a] font-semibold underline"
                               >
                                 Ver PDF
                               </a>
-                              <label className="text-[11px] text-neutral-400 hover:text-neutral-200 cursor-pointer">
+                              <label className="text-[11px] text-[#8d9aae] hover:text-[#17233a] cursor-pointer">
                                 Reemplazar
                                 <input
                                   type="file"
@@ -473,15 +473,15 @@ export function ModalDocumentosFicha({
                           </>
                         ) : (
                           <>
-                            <span className="text-[11px] text-neutral-500">Sin archivo adjunto</span>
+                            <span className="text-[11px] text-[#8d9aae]">Sin archivo adjunto</span>
                             <label className={`px-3 py-1 rounded-lg border text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                               isUploadingThis
-                                ? 'bg-blue-600/30 border-blue-500 text-blue-300 pointer-events-none'
-                                : 'bg-[#0a1c36] hover:bg-blue-600/30 border-[#162e50] hover:border-blue-500/50 text-blue-300'
+                                ? 'bg-[#caa344]/20 border-[#caa344] text-[#caa344] pointer-events-none'
+                                : 'bg-white hover:bg-[#f7f8fb] border-[#e7ebf1] hover:border-[#caa344] text-[#17233a]'
                             }`}>
                               {isUploadingThis ? (
                                 <>
-                                  <svg className="animate-spin h-3 w-3 text-blue-300" fill="none" viewBox="0 0 24 24">
+                                  <svg className="animate-spin h-3 w-3 text-[#caa344]" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                   </svg>
@@ -490,7 +490,7 @@ export function ModalDocumentosFicha({
                               ) : (
                                 <>
                                   <span>Subir PDF</span>
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3.5 h-3.5 text-[#caa344]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                                   </svg>
                                 </>
@@ -515,11 +515,11 @@ export function ModalDocumentosFicha({
         </div>
 
         {/* PIE DEL MODAL */}
-        <div className="px-6 py-4 border-t border-[#162e50]/40 flex items-center justify-end bg-[#0a1c36]/20 shrink-0">
+        <div className="px-6 py-4 border-t border-[#e7ebf1] flex items-center justify-end bg-[#f7f8fb] shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
           >
             Listo / Cerrar
           </button>

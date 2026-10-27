@@ -247,11 +247,11 @@ export default function AccesosClientesPage() {
       {/* 1. Header con estadísticas */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent flex items-center gap-3">
-            <Lock className="w-8 h-8 text-blue-400" />
+          <h1 className="text-3xl font-extrabold text-[#10233f] tracking-tight flex items-center gap-3">
+            <Lock className="w-8 h-8 text-[#caa344]" />
             Accesos de Clientes
           </h1>
-          <p className="text-sm text-neutral-400 mt-1">
+          <p className="text-sm text-[#8d9aae] mt-1">
             Administración de credenciales, activación de cuentas y autenticación 2FA por correo.
           </p>
         </div>
@@ -259,7 +259,7 @@ export default function AccesosClientesPage() {
         <button
           onClick={loadClientes}
           disabled={loading}
-          className="self-start md:self-auto flex items-center gap-2 px-4 py-2.5 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] rounded-xl text-xs font-semibold text-neutral-300 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+          className="self-start md:self-auto flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] hover:border-[#caa344] rounded-xl text-xs font-semibold text-[#17233a] hover:text-[#caa344] transition-all cursor-pointer shadow-xs disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           <span>Actualizar</span>
@@ -271,15 +271,15 @@ export default function AccesosClientesPage() {
         <div
           className={`flex items-center justify-between p-4 rounded-xl text-sm border ${
             feedback.type === 'success'
-              ? 'bg-emerald-950/20 border-emerald-900/40 text-emerald-400'
-              : 'bg-red-950/20 border-red-900/40 text-red-400'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border-red-200 text-red-800'
           }`}
         >
           <div className="flex items-center gap-2.5">
             {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
             ) : (
-              <XCircle className="w-5 h-5 shrink-0" />
+              <XCircle className="w-5 h-5 shrink-0 text-red-600" />
             )}
             <span>{feedback.message}</span>
           </div>
@@ -293,16 +293,16 @@ export default function AccesosClientesPage() {
       )}
 
       {/* 3. Barra de Búsqueda y Filtros */}
-      <div className="backdrop-blur-md bg-[#0a1c36]/20 border border-[#162e50]/40 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
+      <div className="bg-white border border-[#e7ebf1] rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center shadow-xs">
         {/* Input Buscador */}
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#8d9aae] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar por cliente, DNI, correo o usuario..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] transition-all"
           />
         </div>
 
@@ -312,8 +312,8 @@ export default function AccesosClientesPage() {
             onClick={() => setFilterStatus('TODOS')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterStatus === 'TODOS'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                : 'bg-[#0a1c36] text-neutral-400 hover:text-white border border-[#162e50]'
+                ? 'bg-[#caa344] text-white shadow-xs'
+                : 'bg-white text-[#8d9aae] hover:text-[#17233a] border border-[#e7ebf1]'
             }`}
           >
             Todos ({clientes.length})
@@ -322,8 +322,8 @@ export default function AccesosClientesPage() {
             onClick={() => setFilterStatus('CON_ACCESO')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterStatus === 'CON_ACCESO'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                : 'bg-[#0a1c36] text-neutral-400 hover:text-white border border-[#162e50]'
+                ? 'bg-[#caa344] text-white shadow-xs'
+                : 'bg-white text-[#8d9aae] hover:text-[#17233a] border border-[#e7ebf1]'
             }`}
           >
             Con Acceso ({clientes.filter((c) => !!c.persona.usuario).length})
@@ -332,8 +332,8 @@ export default function AccesosClientesPage() {
             onClick={() => setFilterStatus('SIN_ACCESO')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterStatus === 'SIN_ACCESO'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                : 'bg-[#0a1c36] text-neutral-400 hover:text-white border border-[#162e50]'
+                ? 'bg-[#caa344] text-white shadow-xs'
+                : 'bg-white text-[#8d9aae] hover:text-[#17233a] border border-[#e7ebf1]'
             }`}
           >
             Sin Cuenta ({clientes.filter((c) => !c.persona.usuario).length})
@@ -342,10 +342,10 @@ export default function AccesosClientesPage() {
       </div>
 
       {/* 4. Tabla de Clientes y Accesos */}
-      <div className="backdrop-blur-md bg-[#0a1c36]/20 border border-[#162e50]/40 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-[#e7ebf1] rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0a1c36]/60 text-neutral-400 uppercase tracking-wider font-semibold border-b border-[#162e50]/60">
+            <thead className="bg-[#f7f8fb] text-[#8d9aae] uppercase tracking-wider font-semibold border-b border-[#e7ebf1]">
               <tr>
                 <th className="py-4 px-6">Cliente / Documento</th>
                 <th className="py-4 px-6">Correo Electrónico</th>
@@ -356,19 +356,19 @@ export default function AccesosClientesPage() {
                 <th className="py-4 px-6 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#162e50]/30 text-neutral-200">
+            <tbody className="divide-y divide-[#e7ebf1] text-[#17233a]">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-neutral-500">
+                  <td colSpan={7} className="py-12 text-center text-[#8d9aae]">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-[#caa344]" />
                       <span>Cargando directorio de clientes...</span>
                     </div>
                   </td>
                 </tr>
               ) : filteredClientes.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-neutral-500">
+                  <td colSpan={7} className="py-12 text-center text-[#8d9aae]">
                     No se encontraron clientes con los filtros aplicados.
                   </td>
                 </tr>
@@ -380,20 +380,20 @@ export default function AccesosClientesPage() {
                   return (
                     <tr
                       key={cliente.id}
-                      className="hover:bg-[#0a1c36]/30 transition-colors group"
+                      className="hover:bg-[#f7f8fb]/60 transition-colors group"
                     >
                       {/* Cliente */}
                       <td className="py-4 px-6">
-                        <div className="font-semibold text-white text-sm">
+                        <div className="font-semibold text-[#10233f] text-sm">
                           {cliente.persona.nombres} {cliente.persona.apellidos}
                         </div>
-                        <div className="text-neutral-500 text-[11px] font-mono mt-0.5">
+                        <div className="text-[#8d9aae] text-[11px] font-mono mt-0.5">
                           {cliente.persona.tipoDocumento}: {cliente.persona.numeroDocumento}
                         </div>
                       </td>
 
                       {/* Correo */}
-                      <td className="py-4 px-6 font-mono text-neutral-300">
+                      <td className="py-4 px-6 font-mono text-[#17233a]">
                         {cliente.persona.correo}
                       </td>
 
@@ -401,15 +401,15 @@ export default function AccesosClientesPage() {
                       <td className="py-4 px-6">
                         {usuario ? (
                           <div className="flex flex-col">
-                            <span className="font-mono font-bold text-blue-400">
+                            <span className="font-mono font-bold text-[#caa344]">
                               @{usuario.username}
                             </span>
-                            <span className="text-[10px] text-neutral-500 uppercase tracking-widest font-semibold">
+                            <span className="text-[10px] text-[#8d9aae] uppercase tracking-widest font-semibold">
                               Rol: {usuario.rol?.nombre || 'cliente'}
                             </span>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#f7f8fb] text-[#8d9aae] border border-[#e7ebf1]">
                             <UserX className="w-3 h-3" />
                             Sin cuenta creada
                           </span>
@@ -425,15 +425,15 @@ export default function AccesosClientesPage() {
                             title="Haz clic para activar o desactivar 2FA"
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer border ${
                               usuario.requiere2FA
-                                ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20'
-                                : 'bg-neutral-800/40 border-neutral-700 text-neutral-400 hover:bg-neutral-800'
+                                ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                : 'bg-[#f7f8fb] border-[#e7ebf1] text-[#8d9aae]'
                             }`}
                           >
-                            <ShieldCheck className={`w-3.5 h-3.5 ${usuario.requiere2FA ? 'text-blue-400' : 'text-neutral-500'}`} />
+                            <ShieldCheck className={`w-3.5 h-3.5 ${usuario.requiere2FA ? 'text-blue-600' : 'text-[#8d9aae]'}`} />
                             <span>{usuario.requiere2FA ? 'Activo' : 'Inactivo'}</span>
                           </button>
                         ) : (
-                          <span className="text-neutral-600 font-mono text-xs">—</span>
+                          <span className="text-[#8d9aae] font-mono text-xs">—</span>
                         )}
                       </td>
 
@@ -446,20 +446,20 @@ export default function AccesosClientesPage() {
                             title="Haz clic para activar o desactivar acceso"
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer border ${
                               usuario.activo
-                                ? 'bg-emerald-600/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/20'
-                                : 'bg-red-600/10 border-red-500/30 text-red-400 hover:bg-red-600/20'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-red-50 border-red-200 text-red-700'
                             }`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${usuario.activo ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${usuario.activo ? 'bg-emerald-600' : 'bg-red-600'}`} />
                             <span>{usuario.activo ? 'Habilitado' : 'Suspendido'}</span>
                           </button>
                         ) : (
-                          <span className="text-neutral-600 font-mono text-xs">—</span>
+                          <span className="text-[#8d9aae] font-mono text-xs">—</span>
                         )}
                       </td>
 
                       {/* Último Ingreso */}
-                      <td className="py-4 px-6 text-center text-neutral-400 font-mono text-[11px]">
+                      <td className="py-4 px-6 text-center text-[#8d9aae] font-mono text-[11px]">
                         {usuario?.ultimoAcceso
                           ? new Date(usuario.ultimoAcceso).toLocaleDateString('es-PE', {
                               day: '2-digit',
@@ -478,16 +478,16 @@ export default function AccesosClientesPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleOpenResetModal(cliente)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] hover:border-blue-500/40 text-neutral-300 hover:text-white rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] hover:border-[#caa344] text-[#17233a] hover:text-[#caa344] rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-xs"
                             >
-                              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                              <KeyRound className="w-3.5 h-3.5 text-amber-500" />
                               <span>Reset Clave</span>
                             </button>
                           </div>
                         ) : (
                           <button
                             onClick={() => handleOpenCreateModal(cliente)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md shadow-blue-600/20 cursor-pointer active:scale-95"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#caa344] hover:bg-[#b8923a] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
                           >
                             <UserPlus className="w-3.5 h-3.5" />
                             <span>Crear Credenciales</span>
@@ -507,24 +507,24 @@ export default function AccesosClientesPage() {
       {/* 5. MODAL: CREAR CREDENCIALES DE CLIENTE                                    */}
       {/* ========================================================================= */}
       {showCreateModal && selectedCliente && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-[#061325] border border-[#162e50] rounded-2xl p-6 shadow-2xl space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-[#e7ebf1] rounded-2xl p-6 shadow-2xl space-y-6">
             {/* Header del Modal */}
-            <div className="flex items-center justify-between border-b border-[#162e50] pb-4">
+            <div className="flex items-center justify-between border-b border-[#e7ebf1] pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <div className="w-10 h-10 rounded-xl bg-[#caa344]/15 border border-[#caa344]/30 flex items-center justify-center text-[#caa344]">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Crear Acceso a Cliente</h3>
-                  <p className="text-xs text-neutral-400">
+                  <h3 className="text-base font-bold text-[#10233f]">Crear Acceso a Cliente</h3>
+                  <p className="text-xs text-[#8d9aae]">
                     {selectedCliente.persona.nombres} {selectedCliente.persona.apellidos}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-neutral-500 hover:text-white text-lg font-bold cursor-pointer"
+                className="text-[#8d9aae] hover:text-[#17233a] text-lg font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -533,14 +533,14 @@ export default function AccesosClientesPage() {
             {/* Formulario */}
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               {createModalError && (
-                <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-400">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
                   {createModalError}
                 </div>
               )}
 
               {/* Nombre de Usuario */}
               <div>
-                <label className="block text-xs font-semibold uppercase text-neutral-400 mb-1.5">
+                <label className="block text-xs font-semibold uppercase text-[#8d9aae] mb-1.5">
                   Nombre de Usuario (Username)
                 </label>
                 <input
@@ -548,7 +548,7 @@ export default function AccesosClientesPage() {
                   required
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value.toLowerCase().trim())}
-                  className="w-full px-3.5 py-2.5 bg-[#050e1b] border border-[#162e50] rounded-xl text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                  className="w-full px-3.5 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-sm text-[#10233f] font-mono focus:outline-none focus:border-[#caa344]"
                   placeholder="ej. jorge.perez o 72481920"
                 />
               </div>
@@ -556,13 +556,13 @@ export default function AccesosClientesPage() {
               {/* Contraseña Inicial */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold uppercase text-neutral-400">
+                  <label className="text-xs font-semibold uppercase text-[#8d9aae]">
                     Contraseña Inicial
                   </label>
                   <button
                     type="button"
                     onClick={() => setNewPassword(generarPasswordSegura())}
-                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold cursor-pointer"
+                    className="text-xs text-[#caa344] hover:text-[#b8923a] font-semibold cursor-pointer"
                   >
                     🎲 Generar Segura
                   </button>
@@ -573,22 +573,22 @@ export default function AccesosClientesPage() {
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full pl-3.5 pr-20 py-2.5 bg-[#050e1b] border border-[#162e50] rounded-xl text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full pl-3.5 pr-20 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-sm text-[#10233f] font-mono focus:outline-none focus:border-[#caa344]"
                     placeholder="Contraseña del cliente"
                   />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => handleCopy(newPassword)}
-                      className="p-1.5 text-neutral-400 hover:text-white cursor-pointer"
+                      className="p-1.5 text-[#8d9aae] hover:text-[#17233a] cursor-pointer"
                       title="Copiar contraseña"
                     >
-                      {copiedKey ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copiedKey ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="p-1.5 text-neutral-400 hover:text-white cursor-pointer"
+                      className="p-1.5 text-[#8d9aae] hover:text-[#17233a] cursor-pointer"
                     >
                       {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -597,34 +597,34 @@ export default function AccesosClientesPage() {
               </div>
 
               {/* Checkbox 2FA */}
-              <div className="p-3 bg-[#0a1c36]/40 border border-[#162e50] rounded-xl flex items-start gap-3">
+              <div className="p-3 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="requiere2fa"
                   checked={requiere2FA}
                   onChange={(e) => setRequiere2FA(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-neutral-700 bg-[#050e1b]"
+                  className="mt-0.5 w-4 h-4 rounded text-[#caa344] focus:ring-[#caa344] border-[#e7ebf1]"
                 />
-                <label htmlFor="requiere2fa" className="text-xs text-neutral-300 cursor-pointer">
-                  <strong className="block text-white">Exigir autenticación 2FA por correo</strong>
+                <label htmlFor="requiere2fa" className="text-xs text-[#17233a] cursor-pointer">
+                  <strong className="block text-[#10233f]">Exigir autenticación 2FA por correo</strong>
                   Al iniciar sesión, se le enviará un código de verificación a{' '}
-                  <span className="text-blue-400 font-mono">{selectedCliente.persona.correo}</span>.
+                  <span className="text-[#caa344] font-mono">{selectedCliente.persona.correo}</span>.
                 </label>
               </div>
 
               {/* Botones de Acción */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#162e50]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e7ebf1]">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] text-neutral-300 text-xs font-semibold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] text-[#17233a] text-xs font-semibold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === 'create'}
-                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                  className="px-5 py-2 bg-[#caa344] hover:bg-[#b8923a] text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   {actionLoading === 'create' ? 'Guardando...' : 'Crear Cuenta'}
                 </button>
@@ -638,24 +638,24 @@ export default function AccesosClientesPage() {
       {/* 6. MODAL: RESTABLECER CONTRASEÑA                                          */}
       {/* ========================================================================= */}
       {showResetModal && selectedCliente?.persona?.usuario && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-[#061325] border border-[#162e50] rounded-2xl p-6 shadow-2xl space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-[#e7ebf1] rounded-2xl p-6 shadow-2xl space-y-6">
             {/* Header del Modal */}
-            <div className="flex items-center justify-between border-b border-[#162e50] pb-4">
+            <div className="flex items-center justify-between border-b border-[#e7ebf1] pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Restablecer Contraseña</h3>
-                  <p className="text-xs text-neutral-400">
+                  <h3 className="text-base font-bold text-[#10233f]">Restablecer Contraseña</h3>
+                  <p className="text-xs text-[#8d9aae]">
                     Usuario: @{selectedCliente.persona.usuario.username}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowResetModal(false)}
-                className="text-neutral-500 hover:text-white text-lg font-bold cursor-pointer"
+                className="text-[#8d9aae] hover:text-[#17233a] text-lg font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -664,7 +664,7 @@ export default function AccesosClientesPage() {
             {/* Formulario */}
             <form onSubmit={handleResetSubmit} className="space-y-4">
               {resetModalError && (
-                <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-400">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
                   {resetModalError}
                 </div>
               )}
@@ -672,13 +672,13 @@ export default function AccesosClientesPage() {
               {/* Nueva Contraseña */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold uppercase text-neutral-400">
+                  <label className="text-xs font-semibold uppercase text-[#8d9aae]">
                     Nueva Contraseña
                   </label>
                   <button
                     type="button"
                     onClick={() => setResetPassword(generarPasswordSegura())}
-                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold cursor-pointer"
+                    className="text-xs text-[#caa344] hover:text-[#b8923a] font-semibold cursor-pointer"
                   >
                     🎲 Generar Segura
                   </button>
@@ -689,22 +689,22 @@ export default function AccesosClientesPage() {
                     required
                     value={resetPassword}
                     onChange={(e) => setResetPassword(e.target.value)}
-                    className="w-full pl-3.5 pr-20 py-2.5 bg-[#050e1b] border border-[#162e50] rounded-xl text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full pl-3.5 pr-20 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-sm text-[#10233f] font-mono focus:outline-none focus:border-[#caa344]"
                     placeholder="Nueva clave"
                   />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => handleCopy(resetPassword)}
-                      className="p-1.5 text-neutral-400 hover:text-white cursor-pointer"
+                      className="p-1.5 text-[#8d9aae] hover:text-[#17233a] cursor-pointer"
                       title="Copiar contraseña"
                     >
-                      {copiedKey ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copiedKey ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowResetPassword(!showResetPassword)}
-                      className="p-1.5 text-neutral-400 hover:text-white cursor-pointer"
+                      className="p-1.5 text-[#8d9aae] hover:text-[#17233a] cursor-pointer"
                     >
                       {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -712,23 +712,23 @@ export default function AccesosClientesPage() {
                 </div>
               </div>
 
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-[#8d9aae]">
                 Al restablecer la contraseña, se reiniciarán los intentos fallidos de acceso y se marcará la cuenta para solicitar cambio de contraseña en su próximo inicio de sesión.
               </p>
 
               {/* Botones de Acción */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#162e50]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e7ebf1]">
                 <button
                   type="button"
                   onClick={() => setShowResetModal(false)}
-                  className="px-4 py-2 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] text-neutral-300 text-xs font-semibold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] text-[#17233a] text-xs font-semibold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === 'reset'}
-                  className="px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-lg shadow-amber-600/20 disabled:opacity-50"
+                  className="px-5 py-2 bg-[#caa344] hover:bg-[#b8923a] text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   {actionLoading === 'reset' ? 'Actualizando...' : 'Restablecer Clave'}
                 </button>

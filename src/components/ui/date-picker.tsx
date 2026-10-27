@@ -170,51 +170,51 @@ export function DatePicker({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Botón Activador Shadcn */}
+      {/* Botón Activador */}
       <button
         id={id}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          'flex h-10 w-full items-center justify-between rounded-xl border border-[#1b355a] bg-[#0a192f] px-3.5 py-2 text-sm transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 disabled:cursor-not-allowed disabled:opacity-50 text-left font-medium',
-          open && 'border-blue-500 ring-2 ring-blue-500/25',
+          'flex h-10 w-full items-center justify-between rounded-xl border border-[#e7ebf1] bg-[#f7f8fb] px-3.5 py-2 text-sm transition-all outline-none focus:border-[#caa344] focus:ring-2 focus:ring-[#caa344]/20 disabled:cursor-not-allowed disabled:opacity-50 text-left font-medium',
+          open && 'border-[#caa344] ring-2 ring-[#caa344]/20',
           className,
         )}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <CalendarIcon className="h-4 w-4 shrink-0 text-blue-400" />
+          <CalendarIcon className="h-4 w-4 shrink-0 text-[#caa344]" />
           {formattedDisplay ? (
-            <span className="text-neutral-100 font-medium truncate">{formattedDisplay}</span>
+            <span className="text-[#10233f] font-medium truncate">{formattedDisplay}</span>
           ) : (
-            <span className="text-neutral-500 truncate">{placeholder}</span>
+            <span className="text-[#8d9aae] truncate">{placeholder}</span>
           )}
         </div>
         {value ? (
           <span
             role="button"
             onClick={handleClear}
-            className="p-0.5 rounded-full hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+            className="p-0.5 rounded-full hover:bg-[#e7ebf1] text-[#8d9aae] hover:text-[#17233a] transition-colors"
             title="Limpiar fecha"
           >
             <X className="h-3.5 w-3.5" />
           </span>
         ) : (
-          <span className="text-xs text-blue-300/60 font-semibold uppercase tracking-wider">
+          <span className="text-xs text-[#caa344] font-semibold uppercase tracking-wider">
             Elegir
           </span>
         )}
       </button>
 
-      {/* Popover desplegable de Calendario Shadcn */}
+      {/* Popover desplegable de Calendario */}
       {open && (
-        <div className="absolute left-0 top-full mt-2 z-50 w-72 rounded-2xl border border-[#183154] bg-[#08172e] p-4 shadow-2xl backdrop-blur-xl animate-in fade-in-50 zoom-in-95">
+        <div className="absolute left-0 top-full mt-2 z-50 w-72 rounded-2xl border border-[#e7ebf1] bg-white p-4 shadow-2xl backdrop-blur-xl animate-in fade-in-50 zoom-in-95">
           {/* Header del Calendario (Controles de navegación) */}
           <div className="flex items-center justify-between gap-1 mb-3">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-lg border border-[#1b355a] bg-[#0c1e38] text-neutral-300 hover:bg-[#132c52] hover:text-white transition-colors"
+              className="p-1.5 rounded-lg border border-[#e7ebf1] bg-[#f7f8fb] text-[#17233a] hover:bg-[#e7ebf1] transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -224,7 +224,7 @@ export function DatePicker({
               <select
                 value={viewMonth}
                 onChange={(e) => setViewMonth(parseInt(e.target.value, 10))}
-                className="bg-[#0c1e38] border border-[#1b355a] text-neutral-100 text-xs font-semibold rounded-lg px-2 py-1 outline-none cursor-pointer [&_option]:bg-[#0a192f] [&_option]:text-white"
+                className="bg-[#f7f8fb] border border-[#e7ebf1] text-[#10233f] text-xs font-semibold rounded-lg px-2 py-1 outline-none cursor-pointer [&_option]:bg-white [&_option]:text-[#10233f]"
               >
                 {MESES.map((m, idx) => (
                   <option key={m} value={idx}>
@@ -237,7 +237,7 @@ export function DatePicker({
               <select
                 value={viewYear}
                 onChange={(e) => setViewYear(parseInt(e.target.value, 10))}
-                className="bg-[#0c1e38] border border-[#1b355a] text-neutral-100 text-xs font-semibold rounded-lg px-2 py-1 outline-none cursor-pointer [&_option]:bg-[#0a192f] [&_option]:text-white"
+                className="bg-[#f7f8fb] border border-[#e7ebf1] text-[#10233f] text-xs font-semibold rounded-lg px-2 py-1 outline-none cursor-pointer [&_option]:bg-white [&_option]:text-[#10233f]"
               >
                 {yearOptions.map((y) => (
                   <option key={y} value={y}>
@@ -250,7 +250,7 @@ export function DatePicker({
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-1.5 rounded-lg border border-[#1b355a] bg-[#0c1e38] text-neutral-300 hover:bg-[#132c52] hover:text-white transition-colors"
+              className="p-1.5 rounded-lg border border-[#e7ebf1] bg-[#f7f8fb] text-[#17233a] hover:bg-[#e7ebf1] transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -259,7 +259,7 @@ export function DatePicker({
           {/* Días de la Semana */}
           <div className="grid grid-cols-7 gap-1 text-center mb-1">
             {DIAS_SEMANA.map((d) => (
-              <span key={d} className="text-[11px] font-bold text-neutral-400 uppercase py-1">
+              <span key={d} className="text-[11px] font-bold text-[#8d9aae] uppercase py-1">
                 {d}
               </span>
             ))}
@@ -284,12 +284,12 @@ export function DatePicker({
                   type="button"
                   onClick={() => handleSelectDay(dayNum)}
                   className={cn(
-                    'h-8 w-full rounded-lg text-xs font-semibold transition-all flex items-center justify-center',
+                    'h-8 w-full rounded-lg text-xs font-semibold transition-all flex items-center justify-center cursor-pointer',
                     selected
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-600/30'
+                      ? 'bg-[#caa344] text-white font-bold shadow-xs'
                       : today
-                        ? 'bg-blue-500/15 border border-blue-400/40 text-blue-300 font-bold'
-                        : 'text-neutral-200 hover:bg-[#132c52] hover:text-white',
+                        ? 'bg-[#caa344]/15 border border-[#caa344]/40 text-[#caa344] font-bold'
+                        : 'text-[#17233a] hover:bg-[#f7f8fb]',
                   )}
                 >
                   {dayNum}
@@ -299,18 +299,18 @@ export function DatePicker({
           </div>
 
           {/* Barra de Acciones rápidas */}
-          <div className="flex items-center justify-between border-t border-[#183154] pt-2.5 mt-3">
+          <div className="flex items-center justify-between border-t border-[#e7ebf1] pt-2.5 mt-3">
             <button
               type="button"
               onClick={handleClear}
-              className="text-xs text-neutral-400 hover:text-rose-400 font-medium transition-colors"
+              className="text-xs text-[#8d9aae] hover:text-red-600 font-medium transition-colors cursor-pointer"
             >
               Limpiar
             </button>
             <button
               type="button"
               onClick={handleSetToday}
-              className="text-xs text-blue-400 hover:text-blue-300 font-bold transition-colors"
+              className="text-xs text-[#caa344] hover:text-[#b8923a] font-bold transition-colors cursor-pointer"
             >
               Hoy
             </button>

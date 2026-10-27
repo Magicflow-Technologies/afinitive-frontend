@@ -89,8 +89,8 @@ export function PasoConyuge() {
   if (!requiereConyuge) {
     return (
       <SectionCard title="Cónyuge" description="Los datos del cónyuge solo se solicitan cuando el estado civil es Casado o Conviviente.">
-        <p className="text-sm text-muted-foreground sm:col-span-2">
-          Estado civil actual: <strong>{estadoCivil || 'Sin definir'}</strong>. No se requieren datos del cónyuge.
+        <p className="text-sm text-[#8d9aae] sm:col-span-2">
+          Estado civil actual: <strong className="text-[#10233f]">{estadoCivil || 'Sin definir'}</strong>. No se requieren datos del cónyuge.
         </p>
       </SectionCard>
     );
@@ -303,7 +303,7 @@ export function PasoApoderadoCumplimiento() {
         {resideFuera && (
           <div className="flex flex-col gap-3 sm:col-span-2">
             {fields.length === 0 && (
-              <p className="text-sm text-muted-foreground">Agrega los países donde tiene residencia fiscal.</p>
+              <p className="text-sm text-[#8d9aae]">Agrega los países donde tiene residencia fiscal.</p>
             )}
             {fields.map((field, index) => (
               <PaisFila key={field.id} index={index} onRemove={() => remove(index)} />
@@ -313,8 +313,13 @@ export function PasoApoderadoCumplimiento() {
                 <option key={p} value={p} />
               ))}
             </datalist>
-            <Button type="button" variant="outline" onClick={() => append({ pais: '', nit_tin: '' })} className="self-start">
-              <Plus className="size-4" /> Agregar país
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => append({ pais: '', nit_tin: '' })}
+              className="self-start bg-white border border-[#e7ebf1] text-[#17233a] hover:bg-[#f7f8fb] hover:border-[#caa344] cursor-pointer"
+            >
+              <Plus className="size-4 text-[#caa344]" /> Agregar país
             </Button>
           </div>
         )}
@@ -325,7 +330,7 @@ export function PasoApoderadoCumplimiento() {
 
 function PaisFila({ index, onRemove }: { index: number; onRemove: () => void }) {
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-lg border border-border p-3 sm:grid-cols-[1fr_1fr_auto]">
+    <div className="grid grid-cols-1 gap-3 rounded-xl border border-[#e7ebf1] bg-[#f7f8fb] p-3 sm:grid-cols-[1fr_1fr_auto]">
       <Controller<FichaMadreFormValues>
         name={`residencia_fiscal.paises.${index}.pais` as FieldPath<FichaMadreFormValues>}
         render={({ field }) => (
