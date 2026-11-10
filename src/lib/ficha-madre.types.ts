@@ -340,9 +340,9 @@ export function calcularCompletitud(payload: SaveInversionistaPayload): {
     total: 1 + pasoApod.total + pasoAntecedentes.total + pasoResidencia.total,
   };
 
-  // 7. Inversión y cuenta bancaria
+  // 7. Cuenta bancaria
   const pasoInversion = countSection(inv.inversion, [
-    'moneda', 'monto_inicial', 'monto_inicial_letras', 'origen_recursos', 'banco_nombre', 'numero_cuenta', 'cuenta_cci',
+    'banco_nombre', 'numero_cuenta', 'cuenta_cci',
   ]);
 
   const calcPct = (i: { done: number; total: number }) => ({
@@ -374,12 +374,10 @@ export function calcularCompletitud(payload: SaveInversionistaPayload): {
 export function isProfileComplete(payload: SaveInversionistaPayload | null | undefined): boolean {
   if (!payload?.titular) return false;
   const t = payload.titular;
-  const inv = payload.inversion;
   return Boolean(
     t.nombres_apellidos &&
       t.numero_documento &&
       payload.domicilio?.direccion_completa &&
-      payload.informacion_laboral?.ocupacion &&
-      inv?.monto_inicial,
+      payload.informacion_laboral?.ocupacion,
   );
 }

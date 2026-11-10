@@ -19,6 +19,7 @@ export default function FideicomisosAdminPage() {
   // Formulario
   const [formData, setFormData] = useState({
     nombre: '',
+    denominacion: '',
     fideicomitente: 'AFINITIVE S.A.C.',
     emisorFiduciario: 'Grupo Coril Sociedad Titulizadora S.A.',
     patrimonioNombreLargo: '',
@@ -34,7 +35,8 @@ export default function FideicomisosAdminPage() {
     cuentaCci: '',
     titularCuenta: '',
     direccionFiduciario: '',
-    representanteLegal: '',
+    representanteLegal: 'RICARDO MARTIN BERTALMIO RUIBAL',
+    representanteLegalDni: '07636192',
     correoOpCorilDefault: 'operacionesst@grupocoril.com',
     correoOpCorfidDefault: 'operacionescorfid@corfid.com.pe',
     activo: true,
@@ -71,6 +73,7 @@ export default function FideicomisosAdminPage() {
     setEditingFid(null);
     setFormData({
       nombre: '',
+      denominacion: '',
       fideicomitente: 'AFINITIVE S.A.C.',
       emisorFiduciario: 'Grupo Coril Sociedad Titulizadora S.A.',
       patrimonioNombreLargo: '',
@@ -86,7 +89,8 @@ export default function FideicomisosAdminPage() {
       cuentaCci: '',
       titularCuenta: '',
       direccionFiduciario: '',
-      representanteLegal: '',
+      representanteLegal: 'RICARDO MARTIN BERTALMIO RUIBAL',
+      representanteLegalDni: '07636192',
       correoOpCorilDefault: 'operacionesst@grupocoril.com',
       correoOpCorfidDefault: 'operacionescorfid@corfid.com.pe',
       activo: true,
@@ -99,6 +103,7 @@ export default function FideicomisosAdminPage() {
     setEditingFid(fid);
     setFormData({
       nombre: fid.nombre || '',
+      denominacion: fid.denominacion || '',
       fideicomitente: fid.fideicomitente || 'AFINITIVE S.A.C.',
       emisorFiduciario: fid.emisorFiduciario || 'Grupo Coril Sociedad Titulizadora S.A.',
       patrimonioNombreLargo: fid.patrimonioNombreLargo || '',
@@ -114,7 +119,8 @@ export default function FideicomisosAdminPage() {
       cuentaCci: fid.cuentaCci || '',
       titularCuenta: fid.titularCuenta || '',
       direccionFiduciario: fid.direccionFiduciario || '',
-      representanteLegal: fid.representanteLegal || '',
+      representanteLegal: fid.representanteLegal || 'RICARDO MARTIN BERTALMIO RUIBAL',
+      representanteLegalDni: fid.representanteLegalDni || '07636192',
       correoOpCorilDefault: fid.correoOpCorilDefault || 'operacionesst@grupocoril.com',
       correoOpCorfidDefault: fid.correoOpCorfidDefault || 'operacionescorfid@corfid.com.pe',
       activo: fid.activo !== false,
@@ -495,9 +501,37 @@ export default function FideicomisosAdminPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#8d9aae] mb-1">
+                    Denominación
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.denominacion}
+                    onChange={(e) => setFormData({ ...formData, denominacion: e.target.value })}
+                    placeholder="Ej. AFINITIVE"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl font-medium text-[#10233f] focus:outline-none focus:border-[#caa344]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#8d9aae] mb-1">
+                    Tipo de Valor
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tipoValor}
+                    onChange={(e) => setFormData({ ...formData, tipoValor: e.target.value })}
+                    placeholder="Bonos de Titulización"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl font-medium text-[#10233f] focus:outline-none focus:border-[#caa344]"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-[#8d9aae] mb-1">
-                  Patrimonio Nombre Largo (Legal)
+                  Patrimonio Nombre (Legal)
                 </label>
                 <input
                   type="text"
@@ -506,6 +540,41 @@ export default function FideicomisosAdminPage() {
                   placeholder="Patrimonio en Fideicomiso AFINITIVE – D. Leg. N° 861..."
                   className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl font-medium text-[#10233f] focus:outline-none focus:border-[#caa344]"
                 />
+              </div>
+
+              {/* Representante de los Inversionistas */}
+              <div className="pt-2 border-t border-[#e7ebf1] space-y-3">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-[#10233f]">
+                  Representante de los Inversionistas (Por Defecto)
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#8d9aae] mb-1">
+                      Nombre del Representante
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.representanteLegal}
+                      onChange={(e) => setFormData({ ...formData, representanteLegal: e.target.value })}
+                      placeholder="RICARDO MARTIN BERTALMIO RUIBAL"
+                      className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl font-medium text-[#10233f] focus:outline-none focus:border-[#caa344]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#8d9aae] mb-1">
+                      DNI del Representante
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.representanteLegalDni}
+                      onChange={(e) => setFormData({ ...formData, representanteLegalDni: e.target.value })}
+                      placeholder="07636192"
+                      className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl font-medium text-[#10233f] focus:outline-none focus:border-[#caa344]"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Valores Comerciales por Defecto */}

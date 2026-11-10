@@ -82,12 +82,15 @@ export function ModalAsociarFideicomiso({
   const [serieEmision, setSerieEmision] = useState('Primera');
   const [cantidadValores, setCantidadValores] = useState('Uno (01)');
   const [vigenciaInstruccion, setVigenciaInstruccion] = useState('Seis (06) días hábiles');
+  const [tipoValor, setTipoValor] = useState('Bonos de Titulización');
 
   // Cuentas de recaudación / fiduciarias
   const [bancoDestino, setBancoDestino] = useState('');
   const [numeroCuentaDestino, setNumeroCuentaDestino] = useState('');
   const [cuentaCciDestino, setCuentaCciDestino] = useState('');
   const [titularCuentaDestino, setTitularCuentaDestino] = useState('');
+  const [representanteNombre, setRepresentanteNombre] = useState('');
+  const [representanteDni, setRepresentanteDni] = useState('');
 
   // Nuevos campos operativos y de cronograma
   const [vencimiento, setVencimiento] = useState('');
@@ -113,10 +116,25 @@ export function ModalAsociarFideicomiso({
       setSerieEmision(inversionAEditar.serieEmision || 'Primera');
       setCantidadValores(inversionAEditar.cantidadValores || 'Uno (01)');
       setVigenciaInstruccion(inversionAEditar.vigenciaInstruccion || 'Seis (06) días hábiles');
+      setTipoValor(
+        inversionAEditar.tipoValor ||
+          inversionAEditar.fideicomiso?.tipoValor ||
+          'Bonos de Titulización'
+      );
       setBancoDestino(inversionAEditar.bancoDestino || '');
       setNumeroCuentaDestino(inversionAEditar.numeroCuentaDestino || '');
       setCuentaCciDestino(inversionAEditar.cuentaCciDestino || '');
       setTitularCuentaDestino(inversionAEditar.titularCuentaDestino || '');
+      setRepresentanteNombre(
+        inversionAEditar.representanteNombre ||
+          inversionAEditar.fideicomiso?.representanteLegal ||
+          ''
+      );
+      setRepresentanteDni(
+        inversionAEditar.representanteDni ||
+          inversionAEditar.fideicomiso?.representanteLegalDni ||
+          ''
+      );
       setVencimiento(inversionAEditar.vencimiento || '');
       setCorreoOpCoril(inversionAEditar.correoOpCoril || '');
       setCorreoOpCorfid(inversionAEditar.correoOpCorfid || '');
@@ -134,6 +152,9 @@ export function ModalAsociarFideicomiso({
         setNumeroCuentaDestino(defaultFid.numeroCuenta || '');
         setCuentaCciDestino(defaultFid.cuentaCci || '');
         setTitularCuentaDestino(defaultFid.titularCuenta || '');
+        setRepresentanteNombre(defaultFid.representanteLegal || '');
+        setRepresentanteDni(defaultFid.representanteLegalDni || '');
+        setTipoValor(defaultFid.tipoValor || 'Bonos de Titulización');
         setCorreoOpCoril(defaultFid.correoOpCorilDefault || 'operaciones@grupocoril.com');
         setCorreoOpCorfid(defaultFid.correoOpCorfidDefault || 'operaciones@corfid.com.pe');
       } else {
@@ -145,6 +166,9 @@ export function ModalAsociarFideicomiso({
         setNumeroCuentaDestino('');
         setCuentaCciDestino('');
         setTitularCuentaDestino('');
+        setRepresentanteNombre('');
+        setRepresentanteDni('');
+        setTipoValor('Bonos de Titulización');
         setCorreoOpCoril('operaciones@grupocoril.com');
         setCorreoOpCorfid('operaciones@corfid.com.pe');
       }
@@ -171,6 +195,9 @@ export function ModalAsociarFideicomiso({
       if (fid.numeroCuenta) setNumeroCuentaDestino(fid.numeroCuenta);
       if (fid.cuentaCci) setCuentaCciDestino(fid.cuentaCci);
       if (fid.titularCuenta) setTitularCuentaDestino(fid.titularCuenta);
+      if (fid.representanteLegal) setRepresentanteNombre(fid.representanteLegal);
+      if (fid.representanteLegalDni) setRepresentanteDni(fid.representanteLegalDni);
+      if (fid.tipoValor) setTipoValor(fid.tipoValor);
       if (fid.correoOpCorilDefault) setCorreoOpCoril(fid.correoOpCorilDefault);
       if (fid.correoOpCorfidDefault) setCorreoOpCorfid(fid.correoOpCorfidDefault);
     }
@@ -199,8 +226,9 @@ export function ModalAsociarFideicomiso({
       setError('Debes seleccionar un Fideicomiso.');
       return;
     }
-    if (!monto || parseFloat(monto) <= 0) {
-      setError('Debes ingresar un monto válido de inversión.');
+    const numMonto = parseFloat(monto.toString().replace(/,/g, '').trim());
+    if (isNaN(numMonto) || numMonto <= 0) {
+      setError('Debes ingresar un monto numérico válido mayor a 0.');
       return;
     }
 
@@ -211,17 +239,20 @@ export function ModalAsociarFideicomiso({
       if (inversionAEditar) {
         await api.actualizarInversionFideicomiso(inversionAEditar.id, {
           moneda,
-          monto,
+          monto: numMonto,
           montoLetras,
           tasaInteres,
           plazoEmision,
           serieEmision,
           cantidadValores,
           vigenciaInstruccion,
+          tipoValor,
           bancoDestino,
           numeroCuentaDestino,
           cuentaCciDestino,
           titularCuentaDestino,
+          representanteNombre,
+          representanteDni,
           vencimiento,
           correoOpCoril,
           correoOpCorfid,
@@ -233,17 +264,20 @@ export function ModalAsociarFideicomiso({
           fichaMadreId,
           fideicomisoId,
           moneda,
-          monto,
+          monto: numMonto,
           montoLetras,
           tasaInteres,
           plazoEmision,
           serieEmision,
           cantidadValores,
           vigenciaInstruccion,
+          tipoValor,
           bancoDestino,
           numeroCuentaDestino,
           cuentaCciDestino,
           titularCuentaDestino,
+          representanteNombre,
+          representanteDni,
           vencimiento,
           correoOpCoril,
           correoOpCorfid,
@@ -400,7 +434,34 @@ export function ModalAsociarFideicomiso({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#8d9aae] mb-1.5">
+                Tipo de Valor (Formato 07)
+              </label>
+              <input
+                type="text"
+                value={tipoValor}
+                onChange={(e) => setTipoValor(e.target.value)}
+                placeholder="Bonos de Titulización"
+                className="w-full px-4 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#8d9aae] mb-1.5">
+                Vigencia Instrucción
+              </label>
+              <input
+                type="text"
+                value={vigenciaInstruccion}
+                onChange={(e) => setVigenciaInstruccion(e.target.value)}
+                placeholder="Seis (06) días hábiles"
+                className="w-full px-4 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#8d9aae] mb-1.5">
                 Serie de Emisión
@@ -422,18 +483,6 @@ export function ModalAsociarFideicomiso({
                 value={cantidadValores}
                 onChange={(e) => setCantidadValores(e.target.value)}
                 placeholder="Uno (01)"
-                className="w-full px-4 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#8d9aae] mb-1.5">
-                Vigencia Instrucción
-              </label>
-              <input
-                type="text"
-                value={vigenciaInstruccion}
-                onChange={(e) => setVigenciaInstruccion(e.target.value)}
-                placeholder="Seis (06) días hábiles"
                 className="w-full px-4 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
               />
             </div>
@@ -494,6 +543,34 @@ export function ModalAsociarFideicomiso({
                   value={titularCuentaDestino}
                   onChange={(e) => setTitularCuentaDestino(e.target.value)}
                   placeholder="Patrimonio en Fideicomiso AFINITIVE..."
+                  className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
+                />
+              </div>
+            </div>
+
+            {/* Representante de los Inversionistas (Documentos 05 y 06) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div>
+                <label className="block text-[11px] font-semibold text-[#8d9aae] mb-1">
+                  Representante de los Inversionistas
+                </label>
+                <input
+                  type="text"
+                  value={representanteNombre}
+                  onChange={(e) => setRepresentanteNombre(e.target.value)}
+                  placeholder="RICARDO MARTIN BERTALMIO RUIBAL"
+                  className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-[#8d9aae] mb-1">
+                  DNI del Representante
+                </label>
+                <input
+                  type="text"
+                  value={representanteDni}
+                  onChange={(e) => setRepresentanteDni(e.target.value)}
+                  placeholder="07636192"
                   className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-medium text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344]"
                 />
               </div>

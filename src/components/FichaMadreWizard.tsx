@@ -35,7 +35,7 @@ const STEPS = [
   { id: 'laboral', title: '4. Perfil Laboral y Vinculaciones', description: 'Empleo, actividad y patrimonio', Component: PasoLaboral },
   { id: 'origen', title: '5. Origen de Fondos', description: 'Declaración de fuentes de recursos', Component: PasoOrigenFondos },
   { id: 'apoderado', title: '6. Apoderado y Cumplimiento', description: 'Poder registral, antecedentes y FATCA/CRS', Component: PasoApoderadoCumplimiento },
-  { id: 'inversion', title: '7. Inversión y Cuenta Bancaria', description: 'Monto a invertir y datos para abono', Component: PasoInversion },
+  { id: 'inversion', title: '7. Cuenta Bancaria', description: 'Datos bancarios para abono de rendimientos', Component: PasoInversion },
 ] as const;
 
 export interface FichaMadreWizardProps {

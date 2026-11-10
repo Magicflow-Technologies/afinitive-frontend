@@ -52,6 +52,7 @@ export interface Fideicomiso {
   fideicomitente?: string;
   emisorFiduciario?: string;
   patrimonioNombreLargo?: string;
+  denominacion?: string;
   denominacionValores?: string;
   tipoValor?: string;
   monedaDefault?: string;
@@ -65,6 +66,7 @@ export interface Fideicomiso {
   cuentaCci?: string;
   direccionFiduciario?: string;
   representanteLegal?: string;
+  representanteLegalDni?: string;
   correoOpCorilDefault?: string;
   correoOpCorfidDefault?: string;
   activo?: boolean;
@@ -83,10 +85,13 @@ export interface InversionFideicomiso {
   serieEmision?: string;
   cantidadValores?: string;
   vigenciaInstruccion?: string;
+  tipoValor?: string;
   bancoDestino?: string;
   numeroCuentaDestino?: string;
   cuentaCciDestino?: string;
   titularCuentaDestino?: string;
+  representanteNombre?: string;
+  representanteDni?: string;
   vencimiento?: string;
   correoOpCoril?: string;
   correoOpCorfid?: string;
@@ -155,6 +160,41 @@ export interface PortalInversionistaData {
     inversionFideicomisoId?: string;
     esFirmado: boolean;
   }>;
+}
+
+export interface FilaInversionValidada {
+  fila: number;
+  numero?: string;
+  inversionistaRaw: string;
+  clienteId: string;
+  clienteNombre: string;
+  fideicomisoId: string;
+  fideicomisoNombre: string;
+  monto: number;
+  moneda: string;
+  tasa: string;
+  vencimiento: string;
+  correoOpCoril?: string;
+  correoOpCorfid?: string;
+  enlaceCronograma?: string;
+}
+
+export interface InconsistenciaInversion {
+  fila: number;
+  inversionista: string;
+  campo: 'cliente' | 'fideicomiso' | 'monto' | 'tasa' | 'formato';
+  motivo: string;
+  valorDetectado?: string;
+}
+
+export interface ValidacionImportacionInversiones {
+  totalFilas: number;
+  totalValidas: number;
+  totalInconsistencias: number;
+  puedeProceder: boolean;
+  fideicomisosFaltantes: string[];
+  filasValidas: FilaInversionValidada[];
+  inconsistencias: InconsistenciaInversion[];
 }
 
 export interface ResultadoImportacionInversiones {
@@ -730,7 +770,7 @@ export const api = {
   asociarInversionFideicomiso: (payload: {
     fichaMadreId: string;
     fideicomisoId: string;
-    monto: string;
+    monto: number | string;
     moneda?: string;
     montoLetras?: string;
     tasaInteres?: string;
@@ -738,10 +778,13 @@ export const api = {
     serieEmision?: string;
     cantidadValores?: string;
     vigenciaInstruccion?: string;
+    tipoValor?: string;
     bancoDestino?: string;
     numeroCuentaDestino?: string;
     cuentaCciDestino?: string;
     titularCuentaDestino?: string;
+    representanteNombre?: string;
+    representanteDni?: string;
     vencimiento?: string;
     correoOpCoril?: string;
     correoOpCorfid?: string;
@@ -757,7 +800,7 @@ export const api = {
   actualizarInversionFideicomiso: (
     id: string,
     payload: Partial<{
-      monto: string;
+      monto: number | string;
       moneda: string;
       montoLetras: string;
       tasaInteres: string;
@@ -765,10 +808,13 @@ export const api = {
       serieEmision: string;
       cantidadValores: string;
       vigenciaInstruccion: string;
+      tipoValor: string;
       bancoDestino: string;
       numeroCuentaDestino: string;
       cuentaCciDestino: string;
       titularCuentaDestino: string;
+      representanteNombre: string;
+      representanteDni: string;
       vencimiento: string;
       correoOpCoril: string;
       correoOpCorfid: string;
@@ -799,6 +845,27 @@ export const api = {
 
   obtenerPortalInversionista: (clienteId: string): Promise<PortalInversionistaData> => {
     return fetchAPI<PortalInversionistaData>(`/fideicomisos/portal/${clienteId}`);
+  },
+
+  validarInversionesFideicomisoMasivo: async (file: File): Promise<ValidacionImportacionInversiones> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/fideicomisos/validar-importacion`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Error al validar archivo de inversiones en fideicomisos');
+    }
+    return response.json();
+  },
+
+  confirmarInversionesFideicomisoMasivo: async (filas: FilaInversionValidada[]): Promise<ResultadoImportacionInversiones> => {
+    return fetchAPI<ResultadoImportacionInversiones>('/fideicomisos/confirmar-importacion', {
+      method: 'POST',
+      body: JSON.stringify({ filas }),
+    });
   },
 
   importarInversionesFideicomisoMasivo: async (file: File): Promise<ResultadoImportacionInversiones> => {
