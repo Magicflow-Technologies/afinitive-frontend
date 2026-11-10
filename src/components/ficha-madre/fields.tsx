@@ -57,16 +57,16 @@ export function SectionCard({
   return (
     <Card
       className={cn(
-        "bg-[#08172e]/90 border border-[#162e52] shadow-xl backdrop-blur-md rounded-2xl gap-3 p-5 sm:p-6",
+        "bg-white border border-[#e7ebf1] shadow-xs rounded-2xl gap-3 p-5 sm:p-6",
         className,
       )}
     >
       <CardHeader className="p-0 mb-4">
-        <CardTitle className="text-base font-bold text-white tracking-wide">
+        <CardTitle className="text-base font-bold text-[#10233f] tracking-wide">
           {title}
         </CardTitle>
         {description && (
-          <CardDescription className="text-xs text-blue-200/70 leading-relaxed mt-1">
+          <CardDescription className="text-xs text-[#8d9aae] leading-relaxed mt-1">
             {description}
           </CardDescription>
         )}
@@ -102,10 +102,10 @@ export function FieldText({
         <div className={cn("flex flex-col gap-1.5", className)}>
           <Label
             htmlFor={name}
-            className="text-xs font-semibold text-neutral-300"
+            className="text-xs font-semibold text-[#17233a]"
           >
             {label}
-            {required && <span className="text-rose-400 font-bold"> *</span>}
+            {required && <span className="text-rose-500 font-bold"> *</span>}
           </Label>
           <Input
             id={name}
@@ -195,22 +195,22 @@ export function FieldMoney({
             <div className="flex items-center justify-between">
               <Label
                 htmlFor={name}
-                className="text-xs font-semibold text-neutral-300"
+                className="text-xs font-semibold text-[#17233a]"
               >
                 {label}
                 {required && (
-                  <span className="text-rose-400 font-bold"> *</span>
+                  <span className="text-rose-500 font-bold"> *</span>
                 )}
               </Label>
               {displayValue && (
-                <span className="text-[11px] font-mono font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-mono font-bold text-[#caa344] bg-[#caa344]/10 border border-[#caa344]/30 px-2 py-0.5 rounded-md">
                   {currencySymbol} {displayValue} {currency}
                 </span>
               )}
             </div>
 
             <div className="relative flex items-center">
-              <span className="absolute left-3.5 text-xs font-bold text-neutral-400 pointer-events-none select-none">
+              <span className="absolute left-3.5 text-xs font-bold text-[#8d9aae] pointer-events-none select-none">
                 {currencySymbol}
               </span>
               <Input
@@ -221,7 +221,7 @@ export function FieldMoney({
                 value={displayValue}
                 onChange={handleChange}
                 onBlur={field.onBlur}
-                className="pl-8 font-mono text-sm tracking-wide text-white"
+                className="pl-8 font-mono text-sm tracking-wide text-[#10233f]"
               />
             </div>
             <FieldError name={name} />
@@ -255,24 +255,24 @@ export function FieldSelect({
         <div className={cn("flex flex-col gap-1.5", className)}>
           <Label
             htmlFor={name}
-            className="text-xs font-semibold text-neutral-300"
+            className="text-xs font-semibold text-[#17233a]"
           >
             {label}
-            {required && <span className="text-rose-400 font-bold"> *</span>}
+            {required && <span className="text-rose-500 font-bold"> *</span>}
           </Label>
           <Select
             id={name}
             value={String(field.value ?? "")}
             onChange={(e) => field.onChange(e.target.value)}
           >
-            <option value="" className="bg-[#0a192f] text-neutral-400">
+            <option value="" className="bg-white text-[#8d9aae]">
               {placeholder}
             </option>
             {opts.map((o) => (
               <option
                 key={o.value}
                 value={o.value}
-                className="bg-[#0a192f] text-neutral-100"
+                className="bg-white text-[#10233f]"
               >
                 {o.label}
               </option>
@@ -305,10 +305,10 @@ export function FieldTextarea({
         <div className={cn("flex flex-col gap-1.5", className)}>
           <Label
             htmlFor={name}
-            className="text-xs font-semibold text-neutral-300"
+            className="text-xs font-semibold text-[#17233a]"
           >
             {label}
-            {required && <span className="text-rose-400 font-bold"> *</span>}
+            {required && <span className="text-rose-500 font-bold"> *</span>}
           </Label>
           <Textarea
             id={name}
@@ -342,9 +342,9 @@ export function FieldRadio({
       name={name}
       render={({ field }) => (
         <div className={cn("flex flex-col gap-1.5", className)}>
-          <Label className="text-xs font-semibold text-neutral-300">
+          <Label className="text-xs font-semibold text-[#17233a]">
             {label}
-            {required && <span className="text-rose-400 font-bold"> *</span>}
+            {required && <span className="text-rose-500 font-bold"> *</span>}
           </Label>
           <RadioGroup
             value={String(field.value ?? "")}
@@ -356,11 +356,11 @@ export function FieldRadio({
                 <RadioGroupItem
                   value={opt}
                   id={`${name}-${opt}`}
-                  className="border-[#1b355a] text-blue-500"
+                  className="border-[#e7ebf1] text-[#caa344]"
                 />
                 <Label
                   htmlFor={`${name}-${opt}`}
-                  className="font-normal text-xs text-neutral-200 cursor-pointer"
+                  className="font-medium text-xs text-[#17233a] cursor-pointer"
                 >
                   {opt}
                 </Label>
@@ -392,16 +392,16 @@ export function FieldSwitch({
         <div
           onClick={() => field.onChange(!field.value)}
           className={cn(
-            "flex items-center justify-between gap-4 rounded-xl border border-[#162e52] bg-[#09172c] p-3.5 transition-all hover:border-blue-500/40 cursor-pointer select-none",
+            "flex items-center justify-between gap-4 rounded-xl border border-[#e7ebf1] bg-[#f7f8fb] p-3.5 transition-all hover:border-[#caa344]/40 cursor-pointer select-none",
             className,
           )}
         >
           <div>
-            <Label className="text-xs font-semibold text-neutral-200 cursor-pointer">
+            <Label className="text-xs font-semibold text-[#17233a] cursor-pointer">
               {label}
             </Label>
             {description && (
-              <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+              <p className="text-xs text-[#8d9aae] mt-0.5 leading-relaxed">
                 {description}
               </p>
             )}
@@ -438,17 +438,17 @@ export function FieldYesNo({
         return (
           <div
             className={cn(
-              "flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#162e52] bg-[#09172c] p-4 transition-all hover:border-blue-500/30 sm:col-span-2",
+              "flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#e7ebf1] bg-[#f7f8fb] p-4 transition-all hover:border-[#caa344]/30 sm:col-span-2",
               className,
             )}
           >
             <div className="flex-1">
-              <Label className="text-xs font-semibold text-neutral-200">
+              <Label className="text-xs font-semibold text-[#17233a]">
                 {label}
-                {required && <span className="text-rose-400 font-bold"> *</span>}
+                {required && <span className="text-rose-500 font-bold"> *</span>}
               </Label>
               {description && (
-                <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+                <p className="text-xs text-[#8d9aae] mt-0.5 leading-relaxed">
                   {description}
                 </p>
               )}
@@ -460,9 +460,9 @@ export function FieldYesNo({
                 <Checkbox
                   checked={value === true}
                   onCheckedChange={() => field.onChange(true)}
-                  className="border-[#1b355a] data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                  className="border-[#e7ebf1] data-[state=checked]:bg-[#caa344] data-[state=checked]:border-[#caa344]"
                 />
-                <span className="text-xs font-semibold text-neutral-200 tracking-wide">
+                <span className="text-xs font-semibold text-[#17233a] tracking-wide">
                   SÍ
                 </span>
               </label>
@@ -472,9 +472,9 @@ export function FieldYesNo({
                 <Checkbox
                   checked={value === false}
                   onCheckedChange={() => field.onChange(false)}
-                  className="border-[#1b355a] data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                  className="border-[#e7ebf1] data-[state=checked]:bg-[#caa344] data-[state=checked]:border-[#caa344]"
                 />
-                <span className="text-xs font-semibold text-neutral-200 tracking-wide">
+                <span className="text-xs font-semibold text-[#17233a] tracking-wide">
                   NO
                 </span>
               </label>
@@ -505,7 +505,7 @@ export function FieldCheckbox({
       render={({ field }) => (
         <div
           className={cn(
-            "flex items-start gap-3 rounded-xl border border-[#162e52] bg-[#09172c] p-3.5 transition-all hover:border-blue-500/30",
+            "flex items-start gap-3 rounded-xl border border-[#e7ebf1] bg-[#f7f8fb] p-3.5 transition-all hover:border-[#caa344]/30",
             className,
           )}
         >
@@ -513,17 +513,17 @@ export function FieldCheckbox({
             id={name}
             checked={!!field.value}
             onCheckedChange={(checked) => field.onChange(checked === true)}
-            className="mt-0.5 border-[#1b355a]"
+            className="mt-0.5 border-[#e7ebf1]"
           />
           <div>
             <Label
               htmlFor={name}
-              className="text-xs font-semibold text-neutral-200 cursor-pointer"
+              className="text-xs font-semibold text-[#17233a] cursor-pointer"
             >
               {label}
             </Label>
             {description && (
-              <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+              <p className="text-xs text-[#8d9aae] mt-0.5 leading-relaxed">
                 {description}
               </p>
             )}
@@ -552,10 +552,10 @@ export function FieldDate({
         <div className={cn("flex flex-col gap-1.5", className)}>
           <Label
             htmlFor={name}
-            className="text-xs font-semibold text-neutral-300"
+            className="text-xs font-semibold text-[#17233a]"
           >
             {label}
-            {required && <span className="text-rose-400 font-bold"> *</span>}
+            {required && <span className="text-rose-500 font-bold"> *</span>}
           </Label>
           <DatePicker
             id={name}
@@ -581,7 +581,7 @@ export function detectCardBrand(numStr: string): CardBrandInfo {
     return {
       brand: "VISA",
       label: "Visa",
-      badgeStyle: "bg-blue-600/20 border-blue-500/50 text-blue-400 font-black",
+      badgeStyle: "bg-blue-50 border-blue-200 text-blue-700 font-bold",
     };
   }
   if (/^(5[1-5]|2[2-7])/.test(clean)) {
@@ -589,14 +589,14 @@ export function detectCardBrand(numStr: string): CardBrandInfo {
       brand: "MASTERCARD",
       label: "Mastercard",
       badgeStyle:
-        "bg-amber-600/20 border-amber-500/50 text-amber-400 font-black",
+        "bg-amber-50 border-amber-200 text-amber-700 font-bold",
     };
   }
   if (/^3[47]/.test(clean)) {
     return {
       brand: "AMEX",
       label: "Amex",
-      badgeStyle: "bg-cyan-600/20 border-cyan-500/50 text-cyan-300 font-black",
+      badgeStyle: "bg-sky-50 border-sky-200 text-sky-700 font-bold",
     };
   }
   if (/^3(?:0[0-5]|[68])/.test(clean)) {
@@ -604,13 +604,13 @@ export function detectCardBrand(numStr: string): CardBrandInfo {
       brand: "DINERS",
       label: "Diners",
       badgeStyle:
-        "bg-indigo-600/20 border-indigo-500/50 text-indigo-300 font-black",
+        "bg-indigo-50 border-indigo-200 text-indigo-700 font-bold",
     };
   }
   return {
     brand: "GENERIC",
     label: "Cuenta",
-    badgeStyle: "bg-neutral-800 border-neutral-700 text-neutral-400 font-bold",
+    badgeStyle: "bg-[#f7f8fb] border-[#e7ebf1] text-[#8d9aae] font-bold",
   };
 }
 
@@ -708,11 +708,11 @@ export function FieldAccountNumber({
             <div className="flex items-center justify-between">
               <Label
                 htmlFor={name}
-                className="text-xs font-semibold text-neutral-300"
+                className="text-xs font-semibold text-[#17233a]"
               >
                 {label}
                 {required && (
-                  <span className="text-rose-400 font-bold"> *</span>
+                  <span className="text-rose-500 font-bold"> *</span>
                 )}
               </Label>
               {brandInfo && brandInfo.brand !== "GENERIC" && (
@@ -779,15 +779,15 @@ export function FieldCCI({
             <div className="flex items-center justify-between">
               <Label
                 htmlFor={name}
-                className="text-xs font-semibold text-neutral-300"
+                className="text-xs font-semibold text-[#17233a]"
               >
                 {label}
                 {required && (
-                  <span className="text-rose-400 font-bold"> *</span>
+                  <span className="text-rose-500 font-bold"> *</span>
                 )}
               </Label>
               {bancoDetectado && (
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
                   Banco: {bancoDetectado}
                 </span>
               )}

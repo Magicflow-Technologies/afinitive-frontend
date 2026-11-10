@@ -281,11 +281,11 @@ export default function UsuariosSistemaPage() {
   // Badge de color por rol
   const getRolBadgeColor = (rolName: string) => {
     const r = rolName.toLowerCase();
-    if (r === 'admin') return 'bg-purple-600/20 text-purple-400 border-purple-500/30';
-    if (r === 'analista') return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
-    if (r === 'operador') return 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30';
-    if (r === 'cliente') return 'bg-neutral-800 text-neutral-400 border-neutral-700';
-    return 'bg-amber-600/20 text-amber-400 border-amber-500/30';
+    if (r === 'admin') return 'bg-purple-50 text-purple-700 border-purple-200';
+    if (r === 'analista') return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (r === 'operador') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (r === 'cliente') return 'bg-neutral-100 text-neutral-600 border-neutral-200';
+    return 'bg-amber-50 text-amber-700 border-amber-200';
   };
 
   return (
@@ -293,11 +293,11 @@ export default function UsuariosSistemaPage() {
       {/* 1. Header con botón nuevo usuario */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent flex items-center gap-3">
-            <Users className="w-8 h-8 text-blue-400" />
+          <h1 className="text-3xl font-extrabold text-[#10233f] tracking-tight flex items-center gap-3">
+            <Users className="w-8 h-8 text-[#caa344]" />
             Usuarios del Sistema
           </h1>
-          <p className="text-sm text-neutral-400 mt-1">
+          <p className="text-sm text-[#8d9aae] mt-1">
             Gestión del personal interno: Administradores, Analistas, Operadores y Gerencias.
           </p>
         </div>
@@ -306,14 +306,14 @@ export default function UsuariosSistemaPage() {
           <button
             onClick={loadData}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2.5 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] rounded-xl text-xs font-semibold text-neutral-300 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs font-semibold text-[#17233a] transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#caa344]' : 'text-[#8d9aae]'}`} />
           </button>
 
           <button
             onClick={handleOpenCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-600/20 transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#caa344] hover:bg-[#b8923a] text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <UserPlus className="w-4 h-4" />
             <span>+ Nuevo Usuario Interno</span>
@@ -324,17 +324,17 @@ export default function UsuariosSistemaPage() {
       {/* 2. Banner de Feedback */}
       {feedback && (
         <div
-          className={`flex items-center justify-between p-4 rounded-xl text-sm border ${
+          className={`flex items-center justify-between p-4 rounded-xl text-sm border shadow-xs ${
             feedback.type === 'success'
-              ? 'bg-emerald-950/20 border-emerald-900/40 text-emerald-400'
-              : 'bg-red-950/20 border-red-900/40 text-red-400'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border-red-200 text-red-800'
           }`}
         >
           <div className="flex items-center gap-2.5">
             {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
             ) : (
-              <XCircle className="w-5 h-5 shrink-0" />
+              <XCircle className="w-5 h-5 shrink-0 text-red-600" />
             )}
             <span>{feedback.message}</span>
           </div>
@@ -348,16 +348,16 @@ export default function UsuariosSistemaPage() {
       )}
 
       {/* 3. Barra de Búsqueda y Filtros por Rol */}
-      <div className="backdrop-blur-md bg-[#0a1c36]/20 border border-[#162e50]/40 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
+      <div className="bg-white border border-[#e7ebf1] rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center shadow-xs">
         {/* Input Buscador */}
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#8d9aae] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar por nombre, cargo, usuario o correo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344] transition-all"
           />
         </div>
 
@@ -367,8 +367,8 @@ export default function UsuariosSistemaPage() {
             onClick={() => setFilterRol('TODOS')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterRol === 'TODOS'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                : 'bg-[#0a1c36] text-neutral-400 hover:text-white border border-[#162e50]'
+                ? 'bg-[#caa344] text-white shadow-xs'
+                : 'bg-[#f7f8fb] text-[#8d9aae] hover:text-[#17233a] border border-[#e7ebf1]'
             }`}
           >
             Todos ({usuarios.length})
@@ -381,8 +381,8 @@ export default function UsuariosSistemaPage() {
                 onClick={() => setFilterRol(r.nombre)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer uppercase ${
                   filterRol.toLowerCase() === r.nombre.toLowerCase()
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                    : 'bg-[#0a1c36] text-neutral-400 hover:text-white border border-[#162e50]'
+                    ? 'bg-[#caa344] text-white shadow-xs'
+                    : 'bg-[#f7f8fb] text-[#8d9aae] hover:text-[#17233a] border border-[#e7ebf1]'
                 }`}
               >
                 {r.nombre} ({count})
@@ -393,10 +393,10 @@ export default function UsuariosSistemaPage() {
       </div>
 
       {/* 4. Tabla de Usuarios del Sistema */}
-      <div className="backdrop-blur-md bg-[#0a1c36]/20 border border-[#162e50]/40 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-[#e7ebf1] rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0a1c36]/60 text-neutral-400 uppercase tracking-wider font-semibold border-b border-[#162e50]/60">
+            <thead className="bg-[#f7f8fb] text-[#8d9aae] uppercase tracking-wider font-semibold border-b border-[#e7ebf1]">
               <tr>
                 <th className="py-4 px-6">Colaborador / Cargo</th>
                 <th className="py-4 px-6">Contacto y Doc</th>
@@ -408,19 +408,19 @@ export default function UsuariosSistemaPage() {
                 <th className="py-4 px-6 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#162e50]/30 text-neutral-200">
+            <tbody className="divide-y divide-[#e7ebf1] text-[#17233a]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-neutral-500">
+                  <td colSpan={8} className="py-12 text-center text-[#8d9aae]">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-[#caa344]" />
                       <span>Cargando usuarios del sistema...</span>
                     </div>
                   </td>
                 </tr>
               ) : filteredUsuarios.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-neutral-500">
+                  <td colSpan={8} className="py-12 text-center text-[#8d9aae]">
                     No se encontraron usuarios con los filtros especificados.
                   </td>
                 </tr>
@@ -431,29 +431,29 @@ export default function UsuariosSistemaPage() {
                   const area = u.persona.empleado?.area;
 
                   return (
-                    <tr key={u.id} className="hover:bg-[#0a1c36]/30 transition-colors">
+                    <tr key={u.id} className="hover:bg-[#f7f8fb]/80 transition-colors">
                       {/* Colaborador */}
                       <td className="py-4 px-6">
-                        <div className="font-semibold text-white text-sm">
+                        <div className="font-semibold text-[#10233f] text-sm">
                           {u.persona.nombres} {u.persona.apellidos}
                         </div>
-                        <div className="text-neutral-400 text-xs flex items-center gap-1.5 mt-0.5">
-                          <Briefcase className="w-3 h-3 text-neutral-500" />
+                        <div className="text-[#8d9aae] text-xs flex items-center gap-1.5 mt-0.5">
+                          <Briefcase className="w-3 h-3 text-[#8d9aae]" />
                           <span>{cargo}</span>
-                          {area && <span className="text-neutral-500 font-mono">({area})</span>}
+                          {area && <span className="text-[#8d9aae] font-mono">({area})</span>}
                         </div>
                       </td>
 
                       {/* Contacto */}
                       <td className="py-4 px-6">
-                        <div className="font-mono text-neutral-300">{u.persona.correo}</div>
-                        <div className="text-neutral-500 text-[11px] font-mono mt-0.5">
+                        <div className="font-mono text-[#17233a]">{u.persona.correo}</div>
+                        <div className="text-[#8d9aae] text-[11px] font-mono mt-0.5">
                           {u.persona.tipoDocumento}: {u.persona.numeroDocumento}
                         </div>
                       </td>
 
                       {/* Username */}
-                      <td className="py-4 px-6 font-mono font-bold text-blue-400">
+                      <td className="py-4 px-6 font-mono font-bold text-[#caa344]">
                         @{u.username}
                       </td>
 
@@ -465,10 +465,10 @@ export default function UsuariosSistemaPage() {
                           disabled={isActionBusy}
                           className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border focus:outline-none cursor-pointer ${getRolBadgeColor(
                             u.rol?.nombre || '',
-                          )} bg-[#050e1b]`}
+                          )} bg-white`}
                         >
                           {roles.map((r) => (
-                            <option key={r.id} value={r.id} className="bg-[#061325] text-white">
+                            <option key={r.id} value={r.id} className="bg-white text-[#10233f]">
                               {r.nombre.toUpperCase()}
                             </option>
                           ))}
@@ -483,11 +483,11 @@ export default function UsuariosSistemaPage() {
                           title="Alternar requerimiento de 2FA"
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer border ${
                             u.requiere2FA
-                              ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20'
-                              : 'bg-neutral-800/40 border-neutral-700 text-neutral-400 hover:bg-neutral-800'
+                              ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+                              : 'bg-[#f7f8fb] border-[#e7ebf1] text-[#8d9aae] hover:bg-neutral-100'
                           }`}
                         >
-                          <ShieldCheck className={`w-3.5 h-3.5 ${u.requiere2FA ? 'text-blue-400' : 'text-neutral-500'}`} />
+                          <ShieldCheck className={`w-3.5 h-3.5 ${u.requiere2FA ? 'text-blue-600' : 'text-[#8d9aae]'}`} />
                           <span>{u.requiere2FA ? 'Activo' : 'Inactivo'}</span>
                         </button>
                       </td>
@@ -500,17 +500,17 @@ export default function UsuariosSistemaPage() {
                           title="Alternar suspensión de acceso"
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer border ${
                             u.activo
-                              ? 'bg-emerald-600/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/20'
-                              : 'bg-red-600/10 border-red-500/30 text-red-400 hover:bg-red-600/20'
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+                              : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${u.activo ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.activo ? 'bg-emerald-500' : 'bg-red-500'}`} />
                           <span>{u.activo ? 'Habilitado' : 'Suspendido'}</span>
                         </button>
                       </td>
 
                       {/* Último Ingreso */}
-                      <td className="py-4 px-6 text-center text-neutral-400 font-mono text-[11px]">
+                      <td className="py-4 px-6 text-center text-[#8d9aae] font-mono text-[11px]">
                         {u.ultimoAcceso
                           ? new Date(u.ultimoAcceso).toLocaleDateString('es-PE', {
                               day: '2-digit',
@@ -525,9 +525,9 @@ export default function UsuariosSistemaPage() {
                       <td className="py-4 px-6 text-right">
                         <button
                           onClick={() => handleOpenResetModal(u)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] hover:border-amber-500/40 text-neutral-300 hover:text-white rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] hover:border-[#caa344] text-[#17233a] rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-xs"
                         >
-                          <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                          <KeyRound className="w-3.5 h-3.5 text-[#caa344]" />
                           <span>Reset Clave</span>
                         </button>
                       </td>
@@ -544,24 +544,24 @@ export default function UsuariosSistemaPage() {
       {/* 5. MODAL: CREAR USUARIO DEL SISTEMA                                        */}
       {/* ========================================================================= */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-xl bg-[#061325] border border-[#162e50] rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-xl bg-white border border-[#e7ebf1] rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#162e50] pb-4">
+            <div className="flex items-center justify-between border-b border-[#e7ebf1] pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <div className="w-10 h-10 rounded-xl bg-[#caa344]/10 border border-[#caa344]/20 flex items-center justify-center text-[#caa344]">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Nuevo Usuario del Sistema</h3>
-                  <p className="text-xs text-neutral-400">
+                  <h3 className="text-base font-bold text-[#10233f]">Nuevo Usuario del Sistema</h3>
+                  <p className="text-xs text-[#8d9aae]">
                     Crea un colaborador interno (Analista, Operador, Admin, etc.)
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-neutral-500 hover:text-white text-lg font-bold cursor-pointer"
+                className="text-[#8d9aae] hover:text-[#10233f] text-lg font-bold cursor-pointer transition-colors"
               >
                 ✕
               </button>
@@ -569,23 +569,23 @@ export default function UsuariosSistemaPage() {
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               {createError && (
-                <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-400">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
                   {createError}
                 </div>
               )}
 
               {/* Sección 1: Datos Personales */}
-              <div className="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-[#162e50]/60 pb-1">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#caa344] border-b border-[#e7ebf1] pb-1">
                 1. Datos Personales
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Tipo Doc *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Tipo Doc *</label>
                   <select
                     value={createForm.tipoDocumento}
                     onChange={(e: any) => setCreateForm({ ...createForm, tipoDocumento: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] focus:outline-none focus:border-[#caa344]"
                   >
                     <option value="DNI">DNI</option>
                     <option value="CE">Carné Ext.</option>
@@ -594,7 +594,7 @@ export default function UsuariosSistemaPage() {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">N° Documento *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">N° Documento *</label>
                   <input
                     type="text"
                     required
@@ -608,103 +608,103 @@ export default function UsuariosSistemaPage() {
                       }));
                     }}
                     placeholder="Número de identidad"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Nombres *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Nombres *</label>
                   <input
                     type="text"
                     required
                     value={createForm.nombres}
                     onChange={(e) => setCreateForm({ ...createForm, nombres: e.target.value })}
                     placeholder="Nombres completos"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Apellidos *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Apellidos *</label>
                   <input
                     type="text"
                     required
                     value={createForm.apellidos}
                     onChange={(e) => setCreateForm({ ...createForm, apellidos: e.target.value })}
                     placeholder="Apellidos completos"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Correo Corporativo *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Correo Corporativo *</label>
                   <input
                     type="email"
                     required
                     value={createForm.correo}
                     onChange={(e) => setCreateForm({ ...createForm, correo: e.target.value })}
                     placeholder="ej. usuario@afinitive.pe"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white font-mono"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] font-mono focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Teléfono</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Teléfono</label>
                   <input
                     type="text"
                     value={createForm.telefono}
                     onChange={(e) => setCreateForm({ ...createForm, telefono: e.target.value })}
                     placeholder="Opcional"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
               </div>
 
               {/* Sección 2: Puesto Interno */}
-              <div className="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-[#162e50]/60 pb-1 pt-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#caa344] border-b border-[#e7ebf1] pb-1 pt-2">
                 2. Cargo y Área
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Cargo *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Cargo *</label>
                   <input
                     type="text"
                     required
                     value={createForm.cargo}
                     onChange={(e) => setCreateForm({ ...createForm, cargo: e.target.value })}
                     placeholder="ej. Analista de Riesgos"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Área / Departamento</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Área / Departamento</label>
                   <input
                     type="text"
                     value={createForm.area}
                     onChange={(e) => setCreateForm({ ...createForm, area: e.target.value })}
                     placeholder="ej. Operaciones"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
               </div>
 
               {/* Sección 3: Credenciales & Rol */}
-              <div className="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-[#162e50]/60 pb-1 pt-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#caa344] border-b border-[#e7ebf1] pb-1 pt-2">
                 3. Credenciales y Permisos
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-neutral-400 mb-1">Rol de Acceso *</label>
+                <label className="block text-xs font-semibold text-[#17233a] mb-1">Rol de Acceso *</label>
                 <select
                   value={createForm.rolId}
                   onChange={(e) => setCreateForm({ ...createForm, rolId: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white font-bold uppercase"
+                  className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] font-bold uppercase focus:outline-none focus:border-[#caa344]"
                 >
                   {roles.map((r) => (
-                    <option key={r.id} value={r.id}>
+                    <option key={r.id} value={r.id} className="bg-white text-[#10233f]">
                       {r.nombre.toUpperCase()} {r.descripcion ? `— ${r.descripcion}` : ''}
                     </option>
                   ))}
@@ -713,23 +713,23 @@ export default function UsuariosSistemaPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-neutral-400 mb-1">Nombre de Usuario (@username) *</label>
+                  <label className="block text-xs font-semibold text-[#17233a] mb-1">Nombre de Usuario (@username) *</label>
                   <input
                     type="text"
                     required
                     value={createForm.username}
                     onChange={(e) => setCreateForm({ ...createForm, username: e.target.value.toLowerCase().trim() })}
                     placeholder="ej. cperez"
-                    className="w-full px-3 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white font-mono"
+                    className="w-full px-3 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] font-mono focus:outline-none focus:border-[#caa344]"
                   />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-neutral-400">Contraseña *</label>
+                    <label className="text-xs font-semibold text-[#17233a]">Contraseña *</label>
                     <button
                       type="button"
                       onClick={() => setCreateForm({ ...createForm, password: generarPasswordSegura() })}
-                      className="text-xs text-blue-400 hover:text-blue-300 font-semibold cursor-pointer"
+                      className="text-xs text-[#caa344] hover:text-[#b8923a] font-semibold cursor-pointer"
                     >
                       🎲 Generar
                     </button>
@@ -740,21 +740,21 @@ export default function UsuariosSistemaPage() {
                       required
                       value={createForm.password}
                       onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                      className="w-full pl-3 pr-16 py-2 bg-[#050e1b] border border-[#162e50] rounded-xl text-xs text-white font-mono"
+                      className="w-full pl-3 pr-16 py-2 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-xs text-[#10233f] placeholder-[#8d9aae] font-mono focus:outline-none focus:border-[#caa344]"
                     />
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
                       <button
                         type="button"
                         onClick={() => handleCopy(createForm.password)}
-                        className="p-1 text-neutral-400 hover:text-white"
+                        className="p-1 text-[#8d9aae] hover:text-[#10233f]"
                         title="Copiar contraseña"
                       >
-                        {copiedPass ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedPass ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="p-1 text-neutral-400 hover:text-white"
+                        className="p-1 text-[#8d9aae] hover:text-[#10233f]"
                       >
                         {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
@@ -764,33 +764,33 @@ export default function UsuariosSistemaPage() {
               </div>
 
               {/* Checkbox 2FA */}
-              <div className="p-3 bg-[#0a1c36]/40 border border-[#162e50] rounded-xl flex items-start gap-3">
+              <div className="p-3 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="user2fa"
                   checked={createForm.requiere2FA}
                   onChange={(e) => setCreateForm({ ...createForm, requiere2FA: e.target.checked })}
-                  className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-neutral-700 bg-[#050e1b]"
+                  className="mt-0.5 w-4 h-4 rounded text-[#caa344] focus:ring-[#caa344] border-[#e7ebf1] bg-white accent-[#caa344]"
                 />
-                <label htmlFor="user2fa" className="text-xs text-neutral-300 cursor-pointer">
-                  <strong className="block text-white">Activar autenticación 2FA por correo para este colaborador</strong>
-                  Se le enviará un código de verificación de 6 dígitos a su correo en cada inicio de sesión.
+                <label htmlFor="user2fa" className="text-xs text-[#17233a] cursor-pointer">
+                  <strong className="block text-[#10233f]">Activar autenticación 2FA por correo para este colaborador</strong>
+                  <span className="text-[#8d9aae]">Se le enviará un código de verificación de 6 dígitos a su correo en cada inicio de sesión.</span>
                 </label>
               </div>
 
               {/* Botones */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#162e50]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e7ebf1]">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] text-neutral-300 text-xs font-semibold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] text-[#17233a] text-xs font-semibold rounded-xl cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === 'create'}
-                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                  className="px-5 py-2 bg-[#caa344] hover:bg-[#b8923a] text-white text-xs font-semibold rounded-xl cursor-pointer shadow-xs disabled:opacity-50 transition-colors"
                 >
                   {actionLoading === 'create' ? 'Creando Usuario...' : 'Crear Colaborador'}
                 </button>
@@ -804,23 +804,23 @@ export default function UsuariosSistemaPage() {
       {/* 6. MODAL: RESTABLECER CONTRASEÑA                                          */}
       {/* ========================================================================= */}
       {showResetModal && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-[#061325] border border-[#162e50] rounded-2xl p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-[#162e50] pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-[#e7ebf1] rounded-2xl p-6 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-[#e7ebf1] pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="w-10 h-10 rounded-xl bg-[#caa344]/10 border border-[#caa344]/20 flex items-center justify-center text-[#caa344]">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Restablecer Contraseña</h3>
-                  <p className="text-xs text-neutral-400">
+                  <h3 className="text-base font-bold text-[#10233f]">Restablecer Contraseña</h3>
+                  <p className="text-xs text-[#8d9aae]">
                     Usuario: @{selectedUser.username} ({selectedUser.persona.nombres})
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowResetModal(false)}
-                className="text-neutral-500 hover:text-white text-lg font-bold cursor-pointer"
+                className="text-[#8d9aae] hover:text-[#10233f] text-lg font-bold cursor-pointer transition-colors"
               >
                 ✕
               </button>
@@ -828,18 +828,18 @@ export default function UsuariosSistemaPage() {
 
             <form onSubmit={handleResetSubmit} className="space-y-4">
               {resetError && (
-                <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-400">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
                   {resetError}
                 </div>
               )}
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold uppercase text-neutral-400">Nueva Contraseña</label>
+                  <label className="text-xs font-semibold uppercase text-[#17233a]">Nueva Contraseña</label>
                   <button
                     type="button"
                     onClick={() => setResetPassword(generarPasswordSegura())}
-                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold cursor-pointer"
+                    className="text-xs text-[#caa344] hover:text-[#b8923a] font-semibold cursor-pointer"
                   >
                     🎲 Generar Segura
                   </button>
@@ -850,22 +850,22 @@ export default function UsuariosSistemaPage() {
                     required
                     value={resetPassword}
                     onChange={(e) => setResetPassword(e.target.value)}
-                    className="w-full pl-3.5 pr-20 py-2.5 bg-[#050e1b] border border-[#162e50] rounded-xl text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full pl-3.5 pr-20 py-2.5 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl text-sm text-[#10233f] font-mono focus:outline-none focus:border-[#caa344]"
                     placeholder="Nueva clave"
                   />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => handleCopy(resetPassword, true)}
-                      className="p-1.5 text-neutral-400 hover:text-white cursor-pointer"
+                      className="p-1.5 text-[#8d9aae] hover:text-[#10233f] cursor-pointer"
                       title="Copiar contraseña"
                     >
-                      {copiedResetPass ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copiedResetPass ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowResetPassword(!showResetPassword)}
-                      className="p-1.5 text-neutral-400 hover:text-white cursor-pointer"
+                      className="p-1.5 text-[#8d9aae] hover:text-[#10233f] cursor-pointer"
                     >
                       {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -873,18 +873,18 @@ export default function UsuariosSistemaPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#162e50]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e7ebf1]">
                 <button
                   type="button"
                   onClick={() => setShowResetModal(false)}
-                  className="px-4 py-2 bg-[#0a1c36] hover:bg-[#162e50] border border-[#162e50] text-neutral-300 text-xs font-semibold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-white hover:bg-[#f7f8fb] border border-[#e7ebf1] text-[#17233a] text-xs font-semibold rounded-xl cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === 'reset'}
-                  className="px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-lg shadow-amber-600/20 disabled:opacity-50"
+                  className="px-5 py-2 bg-[#caa344] hover:bg-[#b8923a] text-white text-xs font-semibold rounded-xl cursor-pointer shadow-xs disabled:opacity-50 transition-colors"
                 >
                   {actionLoading === 'reset' ? 'Actualizando...' : 'Restablecer Clave'}
                 </button>
