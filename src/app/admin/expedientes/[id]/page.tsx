@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { FichaMadreWizard } from '@/components/FichaMadreWizard';
 import { ModalDocumentosFicha } from '@/components/ModalDocumentosFicha';
 import { ModalAsociarFideicomiso } from '@/components/ModalAsociarFideicomiso';
+import { ModalAmpliacionInversion } from '@/components/ModalAmpliacionInversion';
 import type { FichaMadreResponse } from '@/lib/ficha-madre.types';
 
 const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
@@ -21,6 +22,7 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
   '03_dj_residencia_fiscal.hbs': 3,
   '04_formato_beneficiario_final.hbs': 4,
   '05_carta_solicitud_participacion.hbs': 5,
+  '05_carta_solicitud_ampliacion.hbs': 5.5,
   '06_instruccion_inversion.hbs': 6,
   '07_declaracion_inversion.hbs': 7,
   '01_carta_solicitud_participacion.hbs': 5,
@@ -68,6 +70,7 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
   const [inversiones, setInversiones] = useState<InversionFideicomiso[]>([]);
   const [catalogoFideicomisos, setCatalogoFideicomisos] = useState<Fideicomiso[]>([]);
   const [showAsociarModal, setShowAsociarModal] = useState(false);
+  const [showAmpliacionModal, setShowAmpliacionModal] = useState(false);
   const [inversionAEditar, setInversionAEditar] = useState<InversionFideicomiso | null>(null);
   const [activeFideicomisoId, setActiveFideicomisoId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'documentos' | 'ficha' | 'enlaces'>('documentos');
@@ -880,6 +883,18 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
+                        onClick={() => setShowAmpliacionModal(true)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#caa344] hover:bg-[#b8923a] text-white font-bold text-xs shadow-md shadow-[#caa344]/25 transition-all cursor-pointer"
+                        title="Registrar una ampliación de inversión con versionado"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Ampliar Inversión</span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => handleDownloadPack(inversionActiva)}
                         disabled={downloadingPackId === inversionActiva.id}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10233f] hover:bg-[#17233a] text-white font-bold text-xs shadow-md shadow-[#10233f]/20 hover:ring-2 hover:ring-[#caa344]/50 transition-all cursor-pointer disabled:opacity-50"
@@ -921,10 +936,22 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                   {/* Resumen Financiero en Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <div className="p-3.5 rounded-2xl bg-white border border-[#e7ebf1] shadow-sm">
-                      <span className="block text-[#8d9aae] text-[10px] font-mono font-bold uppercase">Monto Invertido</span>
+                      <div className="flex items-center justify-between">
+                        <span className="block text-[#8d9aae] text-[10px] font-mono font-bold uppercase">Monto Invertido</span>
+                        {inversionActiva.ampliaciones && inversionActiva.ampliaciones.length > 0 && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            v{inversionActiva.ampliaciones.length + 1}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-extrabold text-[#caa344] text-sm mt-0.5 block">
                         {inversionActiva.moneda === 'USD' ? '$' : 'S/'} {Number(inversionActiva.monto || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
+                      {inversionActiva.ampliaciones && inversionActiva.ampliaciones.length > 0 && (
+                        <span className="text-[10px] text-[#8d9aae] mt-0.5 block">
+                          Incluye {inversionActiva.ampliaciones.length} ampliación{inversionActiva.ampliaciones.length > 1 ? 'es' : ''}
+                        </span>
+                      )}
                     </div>
 
                     <div className="p-3.5 rounded-2xl bg-white border border-[#e7ebf1] shadow-sm">
@@ -1020,16 +1047,24 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {docsInversionActiva.map((doc, index) => {
                         const esFirmado = doc.estado === 'FIRMADO' || doc.firmas?.some((f) => f.estado === 'FIRMADO');
+                        const esAmpliacion = Boolean(
+                          doc.ampliacionInversionId ||
+                          (doc.version && doc.version > 1) ||
+                          doc.documentoPlantilla?.archivo?.includes('ampliacion') ||
+                          doc.nombreArchivo?.toLowerCase().includes('ampliación')
+                        );
                         const orderNum = index + 5;
                         return (
                           <div
                             key={doc.id}
-                            className="p-4 bg-white border border-[#e7ebf1] rounded-2xl flex flex-col justify-between gap-3 hover:border-[#caa344] transition-all group shadow-sm"
+                            className={`p-4 bg-white border rounded-2xl flex flex-col justify-between gap-3 transition-all group shadow-sm ${
+                              esAmpliacion ? 'border-[#caa344]/60 bg-amber-50/20 hover:border-[#caa344]' : 'border-[#e7ebf1] hover:border-[#caa344]'
+                            }`}
                           >
                             <div>
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-[10px] font-mono text-[#8d9aae] font-bold">
-                                  FORMATO {String(orderNum).padStart(2, '0')}
+                                  {esAmpliacion ? `CARTA AMPLIACIÓN (v${doc.version || 2})` : `FORMATO ${String(orderNum).padStart(2, '0')}`}
                                 </span>
                                 {esFirmado ? (
                                   <span className="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-extrabold uppercase">
@@ -1436,6 +1471,17 @@ export default function ExpedienteDetail({ params }: { params: Promise<{ id: str
           inversionAEditar={inversionAEditar}
           onSuccess={async () => {
             pushNotice('success', 'Inversión en Fideicomiso procesada con éxito.');
+            await loadExpediente();
+          }}
+        />
+
+        {/* MODAL DE AMPLIACIÓN DE INVERSIÓN */}
+        <ModalAmpliacionInversion
+          isOpen={showAmpliacionModal}
+          onClose={() => setShowAmpliacionModal(false)}
+          inversion={inversionActiva}
+          onSuccess={async () => {
+            pushNotice('success', 'Ampliación de inversión registrada y carta generada con éxito.');
             await loadExpediente();
           }}
         />
