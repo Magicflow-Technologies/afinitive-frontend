@@ -73,6 +73,23 @@ export interface Fideicomiso {
   _count?: { inversiones: number };
 }
 
+export interface AmpliacionInversion {
+  id: string;
+  inversionFideicomisoId: string;
+  numeroVersion: number;
+  montoAnterior: number | string;
+  montoAmpliacion: number | string;
+  montoNuevoTotal: number | string;
+  montoAmpliacionLetras?: string;
+  montoNuevoTotalLetras?: string;
+  fechaSolicitud?: string;
+  estado?: 'PENDIENTE' | 'EN_PROCESO' | 'FIRMADO' | 'CANCELADO';
+  observaciones?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  documentos?: DocumentoGeneral[];
+}
+
 export interface InversionFideicomiso {
   id: string;
   fichaMadreId: string;
@@ -102,6 +119,7 @@ export interface InversionFideicomiso {
   updatedAt?: string;
   fideicomiso?: Fideicomiso;
   documentos?: DocumentoGeneral[];
+  ampliaciones?: AmpliacionInversion[];
 }
 
 export interface InversionPortalItem {
@@ -223,6 +241,8 @@ export interface DocumentoGeneral {
   fichaMadreId: string;
   documentoPlantillaId: string;
   inversionFideicomisoId?: string;
+  ampliacionInversionId?: string;
+  version?: number;
   nombreArchivo: string;
   rutaArchivo: string;
   estado: 'PENDIENTE' | 'GENERADO' | 'PENDIENTE_FIRMA' | 'PARCIAL_FIRMADO' | 'FIRMADO' | 'ANULADO';
@@ -234,6 +254,7 @@ export interface DocumentoGeneral {
   };
   firmas: Firma[];
   inversionFideicomiso?: InversionFideicomiso;
+  ampliacionInversion?: AmpliacionInversion;
 }
 
 export interface FichaMadre {
@@ -831,6 +852,21 @@ export const api = {
   eliminarInversionFideicomiso: (id: string): Promise<{ success: boolean }> => {
     return fetchAPI<{ success: boolean }>(`/fideicomisos/inversion/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  crearAmpliacionInversion: (
+    inversionId: string,
+    payload: {
+      montoAmpliacion: number;
+      montoAmpliacionLetras?: string;
+      montoNuevoTotalLetras?: string;
+      observaciones?: string;
+    },
+  ): Promise<InversionFideicomiso> => {
+    return fetchAPI<InversionFideicomiso>(`/fideicomisos/inversion/${inversionId}/ampliacion`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
   },
 
