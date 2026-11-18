@@ -250,10 +250,10 @@ const residenciaFiscalSchema = z.object({
 });
 
 const inversionSchema = z.object({
-  moneda: textoReq,
-  monto_inicial: textoReq,
+  moneda: texto.default('USD'),
+  monto_inicial: texto.default(''),
   monto_inicial_letras: texto.default(''),
-  origen_recursos: textoReq,
+  origen_recursos: texto.default(''),
   banco_nombre: texto.default(''),
   numero_cuenta: texto.default(''),
   cuenta_cci: texto.default(''),
@@ -492,11 +492,11 @@ export const STEP_TRIGGER_FIELDS: string[][] = [
     'antecedentes_penales_judiciales.especificar_delitos',
     'residencia_fiscal.paises',
   ],
-  // Paso 6: Inversión
+  // Paso 6: Cuenta bancaria
   [
-    'inversion.moneda',
-    'inversion.monto_inicial',
-    'inversion.origen_recursos',
+    'inversion.banco_nombre',
+    'inversion.numero_cuenta',
+    'inversion.cuenta_cci',
   ],
 ];
 

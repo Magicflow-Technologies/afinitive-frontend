@@ -11,7 +11,7 @@ function CheckboxUI({
     <Checkbox.Root
       data-slot="checkbox"
       className={cn(
-        "peer size-4 shrink-0 rounded-[4px] border border-input shadow-sm outline-none transition-shadow focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:border-input dark:bg-input/30 dark:data-[state=checked]:border-primary dark:data-[state=checked]:bg-primary",
+        "peer size-4 shrink-0 rounded-[4px] border border-[#e7ebf1] bg-[#f7f8fb] shadow-xs outline-none transition-all focus-visible:ring-2 focus-visible:ring-[#caa344]/30 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-[#caa344] data-[state=checked]:bg-[#caa344] data-[state=checked]:text-white cursor-pointer",
         className,
       )}
       {...props}

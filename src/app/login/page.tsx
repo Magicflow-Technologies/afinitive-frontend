@@ -60,9 +60,10 @@ export default function LoginPage() {
           throw new Error("No tienes un proceso de onboarding activo actualmente.");
         }
 
+        localStorage.setItem("clienteId", cliente.id);
         localStorage.setItem("fichaMadreId", detalle.fichaMadre.id);
         localStorage.setItem("tokenAcceso", "auth_session");
-        router.push(`/onboarding/session`);
+        router.push(`/portal`);
       } catch (err: any) {
         localStorage.clear();
         throw new Error(err.message || "Error al cargar tu expediente de onboarding.");
@@ -150,15 +151,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-center items-center bg-[#061325] text-white overflow-hidden font-sans">
-      {/* Luces y degradados de fondo inspirados en el Azul de Afinitive */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-500/10 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-violet-600/10 blur-[130px] pointer-events-none" />
+    <div className="relative min-h-screen flex flex-col justify-center items-center bg-[#f7f8fb] text-[#10233f] overflow-hidden font-sans">
+      {/* Luces y degradados de fondo corporativos */}
+      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#caa344]/5 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-[#10233f]/5 blur-[130px] pointer-events-none" />
 
       <div className="w-full max-w-md px-6 z-10">
         {/* Cabecera con Logotipo e imagen institucional */}
         <div className="text-center mb-8">
-          <div className="relative inline-flex items-center justify-center w-36 h-36 rounded-full bg-[#0a1c36] border border-[#162e50] shadow-2xl p-4 mb-4 transition-transform hover:scale-105 duration-300">
+          <div className="relative inline-flex items-center justify-center w-36 h-36 rounded-full bg-white border border-[#e7ebf1] shadow-xl p-4 mb-4 transition-transform hover:scale-105 duration-300">
             <Image
               src="/logo.jpg"
               alt="Afinitive Logo"
@@ -168,16 +169,16 @@ export default function LoginPage() {
               priority
             />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-neutral-100 to-neutral-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#10233f]">
             Afinitive
           </h1>
-          <p className="mt-2 text-sm text-neutral-400">
+          <p className="mt-2 text-sm text-[#8d9aae]">
             Plataforma de Onboarding e Inversiones
           </p>
         </div>
 
         {/* CONTENEDOR PRINCIPAL */}
-        <div className="backdrop-blur-md bg-[#0a1c36]/40 border border-[#162e50] rounded-3xl p-8 shadow-2xl transition-all duration-300">
+        <div className="bg-white border border-[#e7ebf1] rounded-3xl p-8 shadow-xl transition-all duration-300">
           {step === "credentials" ? (
             /* ============================================================ */
             /* PASO 1: FORMULARIO DE CREDENCIALES                           */
@@ -186,7 +187,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="username"
-                  className="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2"
+                  className="block text-xs font-semibold uppercase tracking-wider text-[#17233a] mb-2"
                 >
                   Usuario / Identificación
                 </label>
@@ -196,7 +197,7 @@ export default function LoginPage() {
                   placeholder="Ingresa tu usuario..."
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#050e1b] border border-[#162e50] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-neutral-600 text-sm font-medium"
+                  className="w-full px-4 py-3 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344] transition-all text-[#10233f] placeholder-[#8d9aae] text-sm font-medium"
                   disabled={loading}
                   autoComplete="username"
                 />
@@ -206,7 +207,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between mb-2">
                   <label
                     htmlFor="password"
-                    className="block text-xs font-semibold uppercase tracking-wider text-neutral-400"
+                    className="block text-xs font-semibold uppercase tracking-wider text-[#17233a]"
                   >
                     Contraseña
                   </label>
@@ -218,14 +219,14 @@ export default function LoginPage() {
                     placeholder="Ingresa tu contraseña..."
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#050e1b] border border-[#162e50] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-neutral-600 text-sm font-medium"
+                    className="w-full px-4 py-3 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl focus:outline-none focus:border-[#caa344] focus:ring-1 focus:ring-[#caa344] transition-all text-[#10233f] placeholder-[#8d9aae] text-sm font-medium"
                     disabled={loading}
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={toggleVisibility}
-                    className="absolute right-3 cursor-pointer text-gray-400 hover:text-gray-300 focus:outline-none transition-colors"
+                    className="absolute right-3 cursor-pointer text-[#8d9aae] hover:text-[#17233a] focus:outline-none transition-colors"
                     aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   >
                     {showPassword ? (
@@ -238,9 +239,9 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="flex items-start gap-2.5 text-xs text-red-400 bg-red-950/20 border border-red-900/30 rounded-xl p-3">
+                <div className="flex items-start gap-2.5 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
                   <svg
-                    className="w-4 h-4 mt-0.5 shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -260,7 +261,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="relative w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 disabled:opacity-50 disabled:pointer-events-none group"
+                className="relative w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-[#caa344] hover:bg-[#b8923a] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 disabled:pointer-events-none group cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -313,14 +314,14 @@ export default function LoginPage() {
             /* ============================================================ */
             <form onSubmit={handleVerify2FA} className="space-y-6">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 mb-3 shadow-inner">
-                  <ShieldCheck className="w-6 h-6 text-blue-400" />
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#caa344]/10 border border-[#caa344]/20 text-[#caa344] mb-3 shadow-inner">
+                  <ShieldCheck className="w-6 h-6 text-[#caa344]" />
                 </div>
-                <h2 className="text-lg font-bold text-white">Verificación de Seguridad</h2>
-                <p className="text-xs text-neutral-400 mt-1">
+                <h2 className="text-lg font-bold text-[#10233f]">Verificación de Seguridad</h2>
+                <p className="text-xs text-[#8d9aae] mt-1">
                   Hemos enviado un código numérico de 6 dígitos a:
                 </p>
-                <p className="text-sm font-semibold text-blue-400 font-mono mt-0.5">
+                <p className="text-sm font-semibold text-[#caa344] font-mono mt-0.5">
                   {destino}
                 </p>
               </div>
@@ -328,7 +329,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="otpCode"
-                  className="block text-center text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3"
+                  className="block text-center text-xs font-semibold uppercase tracking-wider text-[#17233a] mb-3"
                 >
                   Código de 6 dígitos
                 </label>
@@ -343,18 +344,18 @@ export default function LoginPage() {
                       const val = e.target.value.replace(/\D/g, ""); // Solo números
                       setOtpCode(val);
                     }}
-                    className="w-full text-center tracking-[12px] text-2xl font-mono py-3.5 px-4 bg-[#050e1b] border border-[#162e50] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white placeholder-neutral-700 transition-all font-bold"
+                    className="w-full text-center tracking-[12px] text-2xl font-mono py-3.5 px-4 bg-[#f7f8fb] border border-[#e7ebf1] rounded-xl focus:outline-none focus:border-[#caa344] focus:ring-2 focus:ring-[#caa344]/20 text-[#10233f] placeholder-[#8d9aae] transition-all font-bold"
                     disabled={otpLoading}
                     autoFocus
                   />
-                  <KeyRound className="w-4 h-4 text-neutral-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <KeyRound className="w-4 h-4 text-[#8d9aae] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
 
               {otpError && (
-                <div className="flex items-start gap-2.5 text-xs text-red-400 bg-red-950/20 border border-red-900/30 rounded-xl p-3">
+                <div className="flex items-start gap-2.5 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
                   <svg
-                    className="w-4 h-4 mt-0.5 shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -372,7 +373,7 @@ export default function LoginPage() {
               )}
 
               {resendSuccess && (
-                <div className="text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 rounded-xl p-3 text-center">
+                <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
                   {resendSuccess}
                 </div>
               )}
@@ -380,7 +381,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={otpLoading || otpCode.length !== 6}
-                className="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 disabled:opacity-40 disabled:pointer-events-none"
+                className="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-[#caa344] hover:bg-[#b8923a] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-xs disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
               >
                 {otpLoading ? (
                   <>
@@ -393,7 +394,7 @@ export default function LoginPage() {
               </button>
 
               {/* Botón de reenvío y volver */}
-              <div className="flex items-center justify-between pt-2 border-t border-[#162e50]/40 text-xs">
+              <div className="flex items-center justify-between pt-2 border-t border-[#e7ebf1] text-xs">
                 <button
                   type="button"
                   onClick={() => {
@@ -402,7 +403,7 @@ export default function LoginPage() {
                     setOtpError("");
                     setResendSuccess("");
                   }}
-                  className="flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-[#8d9aae] hover:text-[#10233f] transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Volver</span>
@@ -412,7 +413,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || otpLoading}
-                  className="text-blue-400 hover:text-blue-300 disabled:text-neutral-500 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
+                  className="text-[#caa344] hover:text-[#b8923a] disabled:text-[#8d9aae] disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
                 >
                   {cooldown > 0 ? (
                     <span>Reenviar en {cooldown}s</span>
@@ -426,11 +427,11 @@ export default function LoginPage() {
         </div>
 
         {/* Footer Info */}
-        <div className="text-center mt-8 text-xs text-neutral-500 space-y-1">
+        <div className="text-center mt-8 text-xs text-[#8d9aae] space-y-1">
           <div>
             Afinitive &copy; {new Date().getFullYear()}. Todos los derechos reservados.
           </div>
-          <div className="text-neutral-600">
+          <div className="text-[#8d9aae]">
             Acceso protegido con autenticación de dos factores (2FA).
           </div>
         </div>

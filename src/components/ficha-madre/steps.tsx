@@ -18,14 +18,11 @@ import {
   FieldYesNo,
   SectionCard,
 } from './fields';
-import { montoALetras } from '@/lib/numero-a-letras';
 import {
   BANCOS,
   ESTADOS_CIVIL,
   GRADOS_INSTRUCCION,
-  MONEDAS,
   ORIGENES_FONDOS_LABELS,
-  ORIGENES_RECURSOS,
   PAISES_SUGERIDOS,
   REGIMENES_PATRIMONIALES,
   SEXOS,
@@ -89,8 +86,8 @@ export function PasoConyuge() {
   if (!requiereConyuge) {
     return (
       <SectionCard title="Cónyuge" description="Los datos del cónyuge solo se solicitan cuando el estado civil es Casado o Conviviente.">
-        <p className="text-sm text-muted-foreground sm:col-span-2">
-          Estado civil actual: <strong>{estadoCivil || 'Sin definir'}</strong>. No se requieren datos del cónyuge.
+        <p className="text-sm text-[#8d9aae] sm:col-span-2">
+          Estado civil actual: <strong className="text-[#10233f]">{estadoCivil || 'Sin definir'}</strong>. No se requieren datos del cónyuge.
         </p>
       </SectionCard>
     );
@@ -303,7 +300,7 @@ export function PasoApoderadoCumplimiento() {
         {resideFuera && (
           <div className="flex flex-col gap-3 sm:col-span-2">
             {fields.length === 0 && (
-              <p className="text-sm text-muted-foreground">Agrega los países donde tiene residencia fiscal.</p>
+              <p className="text-sm text-[#8d9aae]">Agrega los países donde tiene residencia fiscal.</p>
             )}
             {fields.map((field, index) => (
               <PaisFila key={field.id} index={index} onRemove={() => remove(index)} />
@@ -313,8 +310,13 @@ export function PasoApoderadoCumplimiento() {
                 <option key={p} value={p} />
               ))}
             </datalist>
-            <Button type="button" variant="outline" onClick={() => append({ pais: '', nit_tin: '' })} className="self-start">
-              <Plus className="size-4" /> Agregar país
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => append({ pais: '', nit_tin: '' })}
+              className="self-start bg-white border border-[#e7ebf1] text-[#17233a] hover:bg-[#f7f8fb] hover:border-[#caa344] cursor-pointer"
+            >
+              <Plus className="size-4 text-[#caa344]" /> Agregar país
             </Button>
           </div>
         )}
@@ -325,7 +327,7 @@ export function PasoApoderadoCumplimiento() {
 
 function PaisFila({ index, onRemove }: { index: number; onRemove: () => void }) {
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-lg border border-border p-3 sm:grid-cols-[1fr_1fr_auto]">
+    <div className="grid grid-cols-1 gap-3 rounded-xl border border-[#e7ebf1] bg-[#f7f8fb] p-3 sm:grid-cols-[1fr_1fr_auto]">
       <Controller<FichaMadreFormValues>
         name={`residencia_fiscal.paises.${index}.pais` as FieldPath<FichaMadreFormValues>}
         render={({ field }) => (
@@ -360,19 +362,7 @@ function PaisFila({ index, onRemove }: { index: number; onRemove: () => void }) 
 
 export function PasoInversion() {
   const { control, setValue, getValues } = useFormContext<FichaMadreFormValues>();
-  const moneda = useWatch({ control, name: 'inversion.moneda' }) || 'USD';
-  const monto = useWatch({ control, name: 'inversion.monto_inicial' });
   const cci = useWatch({ control, name: 'inversion.cuenta_cci' });
-
-  // Auto-sincronizar el monto en letras en tiempo real cuando se ingresa el monto
-  useEffect(() => {
-    if (monto && String(monto).trim() !== '') {
-      const letras = montoALetras(monto, moneda);
-      if (letras) {
-        setValue('inversion.monto_inicial_letras', letras, { shouldValidate: true });
-      }
-    }
-  }, [monto, moneda, setValue]);
 
   // Auto-seleccionar el banco si se ingresa un CCI con prefijo conocido y el banco está vacío
   useEffect(() => {
@@ -400,34 +390,24 @@ export function PasoInversion() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SectionCard title="Datos de la inversión" description="Monto, moneda y origen de los recursos a invertir.">
-        <FieldSelect name="inversion.moneda" label="Moneda" required options={MONEDAS} />
-        <FieldMoney
-          name="inversion.monto_inicial"
-          label="Monto inicial a invertir"
-          required
-          placeholder="Ej: 10,000.00"
-          currency={moneda}
+      <SectionCard
+        title="Cuenta bancaria para abono de rendimientos"
+        description="Indica la cuenta bancaria del titular donde se abonarán los rendimientos y devoluciones de capital generados por tus inversiones."
+      >
+        <FieldSelect
+          name="inversion.banco_nombre"
+          label="Banco de destino"
+          options={BANCOS}
+          placeholder="Seleccionar banco..."
         />
-        <FieldText
-          name="inversion.monto_inicial_letras"
-          label="Monto en letras"
-          placeholder="Ej: DIEZ MIL CON 00/100 DÓLARES AMERICANOS"
-          className="sm:col-span-2"
-        />
-        <FieldSelect name="inversion.origen_recursos" label="Origen de los recursos" required options={ORIGENES_RECURSOS} />
-      </SectionCard>
-
-      <SectionCard title="Cuenta bancaria para abono de ganancias" description="Cuenta del cliente donde se abonarán los rendimientos.">
-        <FieldSelect name="inversion.banco_nombre" label="Banco" options={BANCOS} placeholder="Seleccionar banco..." />
         <FieldAccountNumber
           name="inversion.numero_cuenta"
-          label="Número de cuenta / tarjeta"
-          placeholder="Ej: 4557-8901-2345-6789 o 191-2848571-0-79"
+          label="Número de cuenta bancaria"
+          placeholder="Ej: 191-2848571-0-79 o 4557-8901-2345-6789"
         />
         <FieldCCI
           name="inversion.cuenta_cci"
-          label="Código de Cuenta Interbancario (CCI)"
+          label="Código de Cuenta Interbancario (CCI - 20 dígitos)"
           placeholder="Ej: 002-191-002848571079-65"
           className="sm:col-span-2"
         />
@@ -435,3 +415,5 @@ export function PasoInversion() {
     </div>
   );
 }
+
+export const PasoCuentaBancaria = PasoInversion;
