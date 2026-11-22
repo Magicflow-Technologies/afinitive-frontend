@@ -22,6 +22,21 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Afinitive - Plataforma de Inversiones",
   description: "Sistema de Inversiones",
+  icons: {
+    icon: [
+      {
+        url: '/icon.png',
+        type: 'image/png'
+      }
+    ],
+    apple: [
+      {
+        url: '/icon.png',
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+  }
 };
 
 export default function RootLayout({

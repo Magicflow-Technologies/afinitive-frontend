@@ -4,6 +4,7 @@
 
 export interface ConyugeData {
   nombres_apellidos?: string;
+  identificacion_tributaria?: string;
   tipo_documento?: string;
   numero_documento?: string;
   regimen_patrimonial?: string;
@@ -12,6 +13,7 @@ export interface ConyugeData {
 
 export interface TitularData {
   nombres_apellidos?: string;
+  identificacion_tributaria?: string;
   tipo_documento?: string;
   numero_documento?: string;
   nacionalidad?: string;
@@ -44,6 +46,10 @@ export interface InformacionLaboralData {
   situacion_laboral?: string;
   profesion?: string;
   ocupacion?: string;
+  actividad_economica_principal?: string;
+  pais_actividad_principal?: string;
+  cargo_actual?: string;
+  tiempo_servicio?: string;
   empresa_centro_trabajo?: string;
   ingreso_promedio_anual?: number | string;
 }
@@ -74,6 +80,8 @@ export interface ApoderadoData {
 
 export interface VinculacionesData {
   es_vinculado_corfid_grupo_coril?: boolean;
+  es_vinculado_grupo_economico?: boolean;
+  nombre_grupo_economico?: string;
   ha_sido_cliente_otra_fiduciaria?: boolean;
   ha_sido_trabajador_otra_fiduciaria?: boolean;
   valor_aproximado_patrimonio?: number | string;
@@ -112,6 +120,19 @@ export interface InversionData {
   banco_nombre?: string;
   numero_cuenta?: string;
   cuenta_cci?: string;
+  tipo_cuenta?: string;
+  exterior_cuenta_beneficiario?: string;
+  exterior_nombre_beneficiario?: string;
+  exterior_direccion_beneficiario?: string;
+  exterior_pais_beneficiario?: string;
+  exterior_banco_destino_swift?: string;
+  exterior_banco_destino_nombre?: string;
+  exterior_banco_destino_direccion?: string;
+  exterior_banco_destino_pais?: string;
+  exterior_banco_intermediario_swift?: string;
+  exterior_banco_intermediario_nombre?: string;
+  exterior_banco_intermediario_direccion?: string;
+  exterior_banco_intermediario_pais?: string;
 }
 
 export interface SaveInversionistaPayload {
@@ -147,6 +168,8 @@ export interface FichaMadreResponse {
     };
   };
 }
+
+export const TIPOS_CUENTA = ['Ahorros', 'Corriente'] as const;
 
 export const TIPOS_DOCUMENTO = ['DNI', 'RUC', 'CE', 'PASAPORTE'] as const;
 export const SEXOS = ['MASCULINO', 'FEMENINO'] as const;
