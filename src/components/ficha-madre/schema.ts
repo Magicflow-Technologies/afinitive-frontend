@@ -8,6 +8,7 @@ export interface FichaMadreFormValues {
   tiene_apoderado: boolean;
   titular: {
     nombres_apellidos: string;
+    identificacion_tributaria: string;
     tipo_documento: string;
     numero_documento: string;
     nacionalidad: string;
@@ -53,6 +54,10 @@ export interface FichaMadreFormValues {
     situacion_laboral: string;
     profesion: string;
     ocupacion: string;
+    actividad_economica_principal: string;
+    pais_actividad_principal: string;
+    cargo_actual: string;
+    tiempo_servicio: string;
     empresa_centro_trabajo: string;
     ingreso_promedio_anual: string;
   };
@@ -87,6 +92,8 @@ export interface FichaMadreFormValues {
   };
   vinculaciones: {
     es_vinculado_corfid_grupo_coril: boolean;
+    es_vinculado_grupo_economico: boolean;
+    nombre_grupo_economico: string;
     ha_sido_cliente_otra_fiduciaria: boolean;
     ha_sido_trabajador_otra_fiduciaria: boolean;
     valor_aproximado_patrimonio: string;
@@ -116,6 +123,19 @@ export interface FichaMadreFormValues {
     banco_nombre: string;
     numero_cuenta: string;
     cuenta_cci: string;
+    tipo_cuenta: string;
+    exterior_cuenta_beneficiario: string;
+    exterior_nombre_beneficiario: string;
+    exterior_direccion_beneficiario: string;
+    exterior_pais_beneficiario: string;
+    exterior_banco_destino_swift: string;
+    exterior_banco_destino_nombre: string;
+    exterior_banco_destino_direccion: string;
+    exterior_banco_destino_pais: string;
+    exterior_banco_intermediario_swift: string;
+    exterior_banco_intermediario_nombre: string;
+    exterior_banco_intermediario_direccion: string;
+    exterior_banco_intermediario_pais: string;
   };
 }
 
@@ -132,6 +152,7 @@ const conyugeSchema = z.object({
 
 const titularSchema = z.object({
   nombres_apellidos: textoReq,
+  identificacion_tributaria: texto.default(''),
   tipo_documento: textoReq,
   numero_documento: textoReq,
   nacionalidad: textoReq,
@@ -180,6 +201,10 @@ const informacionLaboralSchema = z.object({
   situacion_laboral: textoReq,
   profesion: textoReq,
   ocupacion: textoReq,
+  actividad_economica_principal: texto.default(''),
+  pais_actividad_principal: texto.default(''),
+  cargo_actual: texto.default(''),
+  tiempo_servicio: texto.default(''),
   empresa_centro_trabajo: textoReq,
   ingreso_promedio_anual: textoReq,
 });
@@ -222,6 +247,8 @@ const apoderadoSchema = z.object({
 
 const vinculacionesSchema = z.object({
   es_vinculado_corfid_grupo_coril: z.boolean().default(false),
+  es_vinculado_grupo_economico: z.boolean().default(false),
+  nombre_grupo_economico: texto.default(''),
   ha_sido_cliente_otra_fiduciaria: z.boolean().default(false),
   ha_sido_trabajador_otra_fiduciaria: z.boolean().default(false),
   valor_aproximado_patrimonio: textoReq,
@@ -257,6 +284,19 @@ const inversionSchema = z.object({
   banco_nombre: texto.default(''),
   numero_cuenta: texto.default(''),
   cuenta_cci: texto.default(''),
+  tipo_cuenta: texto.default('Ahorros'),
+  exterior_cuenta_beneficiario: texto.default(''),
+  exterior_nombre_beneficiario: texto.default(''),
+  exterior_direccion_beneficiario: texto.default(''),
+  exterior_pais_beneficiario: texto.default(''),
+  exterior_banco_destino_swift: texto.default(''),
+  exterior_banco_destino_nombre: texto.default(''),
+  exterior_banco_destino_direccion: texto.default(''),
+  exterior_banco_destino_pais: texto.default(''),
+  exterior_banco_intermediario_swift: texto.default(''),
+  exterior_banco_intermediario_nombre: texto.default(''),
+  exterior_banco_intermediario_direccion: texto.default(''),
+  exterior_banco_intermediario_pais: texto.default(''),
 });
 
 const baseSchema = z.object({
@@ -286,12 +326,18 @@ const baseSchema = z.object({
     situacion_laboral: '',
     profesion: '',
     ocupacion: '',
+    actividad_economica_principal: '',
+    pais_actividad_principal: 'Perú',
+    cargo_actual: '',
+    tiempo_servicio: '',
     empresa_centro_trabajo: '',
     ingreso_promedio_anual: '',
   }),
   apoderado: apoderadoSchema,
   vinculaciones: vinculacionesSchema.default({
     es_vinculado_corfid_grupo_coril: false,
+    es_vinculado_grupo_economico: false,
+    nombre_grupo_economico: '',
     ha_sido_cliente_otra_fiduciaria: false,
     ha_sido_trabajador_otra_fiduciaria: false,
     valor_aproximado_patrimonio: '',
@@ -311,13 +357,26 @@ const baseSchema = z.object({
   }),
   residencia_fiscal: residenciaFiscalSchema,
   inversion: inversionSchema.default({
-    moneda: '',
+    moneda: 'USD',
     monto_inicial: '',
     monto_inicial_letras: '',
     origen_recursos: '',
     banco_nombre: '',
     numero_cuenta: '',
     cuenta_cci: '',
+    tipo_cuenta: 'Ahorros',
+    exterior_cuenta_beneficiario: '',
+    exterior_nombre_beneficiario: '',
+    exterior_direccion_beneficiario: '',
+    exterior_pais_beneficiario: '',
+    exterior_banco_destino_swift: '',
+    exterior_banco_destino_nombre: '',
+    exterior_banco_destino_direccion: '',
+    exterior_banco_destino_pais: '',
+    exterior_banco_intermediario_swift: '',
+    exterior_banco_intermediario_nombre: '',
+    exterior_banco_intermediario_direccion: '',
+    exterior_banco_intermediario_pais: '',
   }),
 });
 
@@ -507,6 +566,7 @@ export function defaultFormValues(): FichaMadreFormValues {
     tiene_apoderado: false,
     titular: {
       nombres_apellidos: '',
+      identificacion_tributaria: '',
       tipo_documento: 'DNI',
       numero_documento: '',
       nacionalidad: 'Peruana',
@@ -532,7 +592,7 @@ export function defaultFormValues(): FichaMadreFormValues {
     },
     domicilio: { direccion_completa: '', numero: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
     direccion_correspondencia: { direccion_completa: '', numero: '', distrito: '', provincia: '', departamento: '', pais_domicilio: 'Perú', codigo_postal: '' },
-    informacion_laboral: { situacion_laboral: '', profesion: '', ocupacion: '', empresa_centro_trabajo: '', ingreso_promedio_anual: '' },
+    informacion_laboral: { situacion_laboral: '', profesion: '', ocupacion: '', actividad_economica_principal: '', pais_actividad_principal: 'Perú', cargo_actual: '', tiempo_servicio: '', empresa_centro_trabajo: '', ingreso_promedio_anual: '' },
     apoderado: {
       nombres_apellidos: '',
       tipo_documento: 'DNI',
@@ -552,6 +612,8 @@ export function defaultFormValues(): FichaMadreFormValues {
     },
     vinculaciones: {
       es_vinculado_corfid_grupo_coril: false,
+      es_vinculado_grupo_economico: false,
+      nombre_grupo_economico: '',
       ha_sido_cliente_otra_fiduciaria: false,
       ha_sido_trabajador_otra_fiduciaria: false,
       valor_aproximado_patrimonio: '',
@@ -567,7 +629,28 @@ export function defaultFormValues(): FichaMadreFormValues {
     },
     antecedentes_penales_judiciales: { es_investigado_delitos: false, especificar_delitos: '' },
     residencia_fiscal: { tiene_residencia_fiscal_extranjera: false, paises: [] },
-    inversion: { moneda: 'USD', monto_inicial: '', monto_inicial_letras: '', origen_recursos: 'Ahorros personales', banco_nombre: '', numero_cuenta: '', cuenta_cci: '' },
+    inversion: {
+      moneda: 'USD',
+      monto_inicial: '',
+      monto_inicial_letras: '',
+      origen_recursos: 'Ahorros personales',
+      banco_nombre: '',
+      numero_cuenta: '',
+      cuenta_cci: '',
+      tipo_cuenta: 'Ahorros',
+      exterior_cuenta_beneficiario: '',
+      exterior_nombre_beneficiario: '',
+      exterior_direccion_beneficiario: '',
+      exterior_pais_beneficiario: '',
+      exterior_banco_destino_swift: '',
+      exterior_banco_destino_nombre: '',
+      exterior_banco_destino_direccion: '',
+      exterior_banco_destino_pais: '',
+      exterior_banco_intermediario_swift: '',
+      exterior_banco_intermediario_nombre: '',
+      exterior_banco_intermediario_direccion: '',
+      exterior_banco_intermediario_pais: '',
+    },
   };
 }
 
@@ -591,7 +674,7 @@ export function mergeFetchedIntoDefaults(
 
   const t = fetched.titular;
   if (t) {
-    for (const key of ['nombres_apellidos', 'tipo_documento', 'numero_documento', 'nacionalidad', 'sexo', 'pais_nacimiento', 'departamento_nacimiento', 'fecha_nacimiento', 'pais_residencia', 'grado_instruccion', 'estado_civil', 'correo_electronico', 'telefono_celular', 'pep_institucion_cargo'] as const) {
+    for (const key of ['nombres_apellidos', 'identificacion_tributaria', 'tipo_documento', 'numero_documento', 'nacionalidad', 'sexo', 'pais_nacimiento', 'departamento_nacimiento', 'fecha_nacimiento', 'pais_residencia', 'grado_instruccion', 'estado_civil', 'correo_electronico', 'telefono_celular', 'pep_institucion_cargo'] as const) {
       if (!isBlank(t[key])) out.titular[key] = String(t[key]);
     }
     if (typeof t.es_inversionista === 'boolean') out.titular.es_inversionista = t.es_inversionista;
@@ -615,7 +698,7 @@ export function mergeFetchedIntoDefaults(
 
   const l = fetched.informacion_laboral;
   if (l) {
-    for (const key of ['situacion_laboral', 'profesion', 'ocupacion', 'empresa_centro_trabajo', 'ingreso_promedio_anual'] as const) {
+    for (const key of ['situacion_laboral', 'profesion', 'ocupacion', 'actividad_economica_principal', 'pais_actividad_principal', 'cargo_actual', 'tiempo_servicio', 'empresa_centro_trabajo', 'ingreso_promedio_anual'] as const) {
       if (!isBlank(l[key])) out.informacion_laboral[key] = String(l[key]);
     }
   }
@@ -637,10 +720,11 @@ export function mergeFetchedIntoDefaults(
 
   const v = fetched.vinculaciones;
   if (v) {
-    for (const key of ['es_vinculado_corfid_grupo_coril', 'ha_sido_cliente_otra_fiduciaria', 'ha_sido_trabajador_otra_fiduciaria'] as const) {
+    for (const key of ['es_vinculado_corfid_grupo_coril', 'es_vinculado_grupo_economico', 'ha_sido_cliente_otra_fiduciaria', 'ha_sido_trabajador_otra_fiduciaria'] as const) {
       if (typeof v[key] === 'boolean') out.vinculaciones[key] = v[key] as boolean;
     }
     if (!isBlank(v.valor_aproximado_patrimonio)) out.vinculaciones.valor_aproximado_patrimonio = String(v.valor_aproximado_patrimonio);
+    if (!isBlank(v.nombre_grupo_economico)) out.vinculaciones.nombre_grupo_economico = String(v.nombre_grupo_economico);
   }
 
   const o = fetched.origen_fondos;
@@ -666,7 +750,7 @@ export function mergeFetchedIntoDefaults(
 
   const i = fetched.inversion;
   if (i) {
-    for (const key of ['moneda', 'monto_inicial', 'monto_inicial_letras', 'origen_recursos', 'banco_nombre', 'numero_cuenta', 'cuenta_cci'] as const) {
+    for (const key of ['moneda', 'monto_inicial', 'monto_inicial_letras', 'origen_recursos', 'banco_nombre', 'numero_cuenta', 'cuenta_cci', 'tipo_cuenta', 'exterior_cuenta_beneficiario', 'exterior_nombre_beneficiario', 'exterior_direccion_beneficiario', 'exterior_pais_beneficiario', 'exterior_banco_destino_swift', 'exterior_banco_destino_nombre', 'exterior_banco_destino_direccion', 'exterior_banco_destino_pais', 'exterior_banco_intermediario_swift', 'exterior_banco_intermediario_nombre', 'exterior_banco_intermediario_direccion', 'exterior_banco_intermediario_pais'] as const) {
       if (!isBlank(i[key])) out.inversion[key] = String(i[key]);
     }
   }

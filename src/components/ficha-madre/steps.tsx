@@ -27,6 +27,7 @@ import {
   REGIMENES_PATRIMONIALES,
   SEXOS,
   SITUACIONES_LABORALES,
+  TIPOS_CUENTA,
   TIPOS_DOCUMENTO,
 } from '@/lib/ficha-madre.types';
 import type { FichaMadreFormValues } from './schema';
@@ -41,6 +42,7 @@ export function PasoTitular() {
         <FieldText name="titular.nombres_apellidos" label="Nombres y apellidos" required className="sm:col-span-2" placeholder="Ej: Juan Carlos Pérez Gómez" />
         <FieldSelect name="titular.tipo_documento" label="Tipo de documento" required options={TIPOS_DOCUMENTO} />
         <FieldText name="titular.numero_documento" label="Número de documento" required placeholder="Ej: 12345678" />
+        <FieldText name="titular.identificacion_tributaria" label="Identificación Tributaria / RUC (opcional)" placeholder="Ej: 10123456789 o N° de RUC" />
         <FieldText name="titular.nacionalidad" label="Nacionalidad" required placeholder="Ej: Peruana" />
         <FieldRadio name="titular.sexo" label="Sexo" required options={SEXOS} />
         <FieldText name="titular.pais_nacimiento" label="País de nacimiento" required placeholder="Ej: Perú" />
@@ -152,12 +154,19 @@ export function PasoDomicilio() {
 }
 
 export function PasoLaboral() {
+  const { control } = useFormContext<FichaMadreFormValues>();
+  const vinculadoGrupo = useWatch({ control, name: 'vinculaciones.es_vinculado_grupo_economico' });
+
   return (
     <div className="flex flex-col gap-4">
-      <SectionCard title="Perfil laboral" description="Situación laboral y actividad profesional actual.">
+      <SectionCard title="Perfil laboral y actividad económica" description="Situación laboral y actividad profesional actual.">
         <FieldSelect name="informacion_laboral.situacion_laboral" label="Situación laboral" required options={SITUACIONES_LABORALES} />
         <FieldText name="informacion_laboral.profesion" label="Profesión" required placeholder="Ej: Administración de Empresas / Economía" />
         <FieldText name="informacion_laboral.ocupacion" label="Ocupación" required placeholder="Ej: Gerente Comercial / Consultor" />
+        <FieldText name="informacion_laboral.actividad_economica_principal" label="Actividad Económica Principal" placeholder="Ej: Comercio al por mayor / Servicios profesionales" />
+        <FieldText name="informacion_laboral.pais_actividad_principal" label="País de desarrollo de actividades" placeholder="Ej: Perú" />
+        <FieldText name="informacion_laboral.cargo_actual" label="Cargo actual (si aplica)" placeholder="Ej: Gerente General / Subdirector" />
+        <FieldText name="informacion_laboral.tiempo_servicio" label="Tiempo de servicio" placeholder="Ej: 4 años" />
         <FieldText name="informacion_laboral.empresa_centro_trabajo" label="Empresa / centro de trabajo" required placeholder="Ej: Inversiones Globales S.A.C." />
         <FieldMoney
           name="informacion_laboral.ingreso_promedio_anual"
@@ -168,12 +177,26 @@ export function PasoLaboral() {
         />
       </SectionCard>
 
-      <SectionCard title="Vinculaciones y patrimonio" description="Vínculos con el Grupo Corfid y valor aproximado del patrimonio.">
+      <SectionCard title="Vinculaciones y patrimonio" description="Vínculos con Grupo Coril / entidades y valor aproximado del patrimonio.">
         <FieldCheckbox
           name="vinculaciones.es_vinculado_corfid_grupo_coril"
-          label="¿Está vinculado a CORFID / Grupo Coril?"
+          label="¿Está vinculado a Grupo Coril?"
           description="Directivos, accionistas o personal de las empresas del grupo."
         />
+        <FieldCheckbox
+          name="vinculaciones.es_vinculado_grupo_economico"
+          label="¿Está vinculado a algún grupo económico?"
+          description="Indica si mantiene vinculación directa con algún grupo empresarial."
+        />
+        {Boolean(vinculadoGrupo) && (
+          <FieldText
+            name="vinculaciones.nombre_grupo_economico"
+            label="Nombre del grupo económico vinculado"
+            required
+            placeholder="Ej: Grupo Romero / Grupo Breca"
+            className="sm:col-span-2"
+          />
+        )}
         <FieldCheckbox
           name="vinculaciones.ha_sido_cliente_otra_fiduciaria"
           label="¿Ha sido cliente de otra fiduciaria?"
@@ -391,14 +414,19 @@ export function PasoInversion() {
   return (
     <div className="flex flex-col gap-4">
       <SectionCard
-        title="Cuenta bancaria para abono de rendimientos"
-        description="Indica la cuenta bancaria del titular donde se abonarán los rendimientos y devoluciones de capital generados por tus inversiones."
+        title="Cuenta bancaria para abono de rendimientos (Anexo 3 - Nacional)"
+        description="Indica la cuenta bancaria en Perú donde se abonarán los rendimientos y devoluciones de capital generados por tus inversiones."
       >
         <FieldSelect
           name="inversion.banco_nombre"
           label="Banco de destino"
           options={BANCOS}
           placeholder="Seleccionar banco..."
+        />
+        <FieldSelect
+          name="inversion.tipo_cuenta"
+          label="Tipo de cuenta"
+          options={TIPOS_CUENTA}
         />
         <FieldAccountNumber
           name="inversion.numero_cuenta"
@@ -409,8 +437,30 @@ export function PasoInversion() {
           name="inversion.cuenta_cci"
           label="Código de Cuenta Interbancario (CCI - 20 dígitos)"
           placeholder="Ej: 002-191-002848571079-65"
-          className="sm:col-span-2"
         />
+      </SectionCard>
+
+      <SectionCard
+        title="Transferencias al Exterior (Opcional - Anexo 4)"
+        description="Completa esta sección únicamente si operas o recibirás transferencias desde/hacia cuentas internacionales."
+      >
+        <div className="text-xs font-semibold text-[#0072c8] uppercase tracking-wider sm:col-span-2">1. Datos del beneficiario</div>
+        <FieldText name="inversion.exterior_cuenta_beneficiario" label="Cuenta del beneficiario" placeholder="N° de cuenta o IBAN" />
+        <FieldText name="inversion.exterior_nombre_beneficiario" label="Nombre del beneficiario" placeholder="Nombre completo" />
+        <FieldText name="inversion.exterior_direccion_beneficiario" label="Dirección del beneficiario" placeholder="Dirección del beneficiario" />
+        <FieldText name="inversion.exterior_pais_beneficiario" label="País del beneficiario" placeholder="Ej: Estados Unidos" />
+
+        <div className="text-xs font-semibold text-[#0072c8] uppercase tracking-wider sm:col-span-2 mt-2">2. Banco de destino</div>
+        <FieldText name="inversion.exterior_banco_destino_swift" label="Código SWIFT / ABA" placeholder="Ej: BOFAUS3N" />
+        <FieldText name="inversion.exterior_banco_destino_nombre" label="Nombre del banco destino" placeholder="Ej: Bank of America" />
+        <FieldText name="inversion.exterior_banco_destino_direccion" label="Dirección del banco destino" placeholder="Dirección del banco" />
+        <FieldText name="inversion.exterior_banco_destino_pais" label="País del banco destino" placeholder="Ej: Estados Unidos" />
+
+        <div className="text-xs font-semibold text-[#0072c8] uppercase tracking-wider sm:col-span-2 mt-2">3. Banco Intermediario (En caso aplique)</div>
+        <FieldText name="inversion.exterior_banco_intermediario_swift" label="Código SWIFT / ABA intermediario" placeholder="Ej: CHASUS33" />
+        <FieldText name="inversion.exterior_banco_intermediario_nombre" label="Banco intermediario" placeholder="Ej: JPMorgan Chase" />
+        <FieldText name="inversion.exterior_banco_intermediario_direccion" label="Dirección intermediario" placeholder="Dirección" />
+        <FieldText name="inversion.exterior_banco_intermediario_pais" label="País intermediario" placeholder="Ej: Estados Unidos" />
       </SectionCard>
     </div>
   );
